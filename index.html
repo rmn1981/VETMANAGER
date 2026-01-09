@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VetManager Pro v10</title>
+    <style>
+        /* --- DESIGN SYSTEM VETMANAGER --- */
+        :root {
+            --primary: #27ae60;
+            --primary-dark: #219150;
+            --secondary: #34495e;
+            --accent: #2980b9;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --border: #e1e4e8;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 90px; user-select: none; -webkit-tap-highlight-color: transparent; color: var(--text); }
+        .container { max-width: 600px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        
+        /* HEADER */
+        .app-header { background: var(--secondary); color: white; padding: 18px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .app-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
+        
+        /* NAVIGATION */
+        .nav-tabs { display: flex; background: #2c3e50; position: sticky; top: 0; z-index: 100; }
+        .nav-item { flex: 1; padding: 16px; text-align: center; color: #95a5a6; cursor: pointer; border-bottom: 4px solid transparent; transition: all 0.3s; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+        .nav-item.active { color: white; border-bottom-color: var(--primary); background: #34495e; }
+        
+        /* CONTENT ANIMATION */
+        .tab-content { display: none; padding: 20px; animation: fadeIn 0.4s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FORMS & INPUTS */
+        .section-title { color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-top: 30px; font-weight: 800; display: flex; align-items: center; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-title:first-of-type { margin-top: 10px; }
+        
+        label { display: block; margin-top: 15px; font-weight: 600; color: #555; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: border 0.2s; -webkit-appearance: none; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
+
+        /* LISTA DE PATOLOGIAS (SCROLLABLE) */
+        .symptoms-list { max-height: 400px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px; margin-top: 12px; }
+        .symptom-group-title { background: #f8f9fa; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; color: #95a5a6; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #eee; border-top: 1px solid #eee; }
+        .symptom-group-title:first-child { border-top: none; }
+        
+        .symptom-item { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+        .symptom-item:last-child { border-bottom: none; }
+        .symptom-item:active { background-color: #e8f8f5; }
+        
+        .symptom-item input { width: 22px; height: 22px; margin: 0 15px 0 0; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+        .pat-content { display: flex; flex-direction: column; }
+        .pat-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+        .med-name { font-size: 0.8rem; color: #7f8c8d; }
+
+        /* ACTIONS */
+        .btn { width: 100%; padding: 16px; margin-top: 25px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: linear-gradient(135deg, #27ae60 0%, #219150 100%); color: white; }
+        .btn-share { background: linear-gradient(135deg, #2980b9 0%, #2573a7 100%); color: white; margin-top: 15px; }
+        .btn-config { background: #95a5a6; color: white; }
+        
+        .share-hint { font-size: 0.8rem; color: #7f8c8d; text-align: center; margin-top: 12px; background: #f0f3f4; padding: 10px; border-radius: 6px; line-height: 1.4; }
+
+        /* CARIMBO & ASSINATURA */
+        .stamp-upload-area { border: 2px dashed #bdc3c7; padding: 25px; text-align: center; border-radius: 10px; margin-top: 15px; background: #fafafa; }
+        .stamp-preview { max-width: 100%; height: auto; max-height: 100px; margin-top: 15px; display: none; border: 1px solid #ddd; padding: 5px; background: white; border-radius: 4px; }
+        
+        .signature-wrapper { border: 2px dashed #95a5a6; border-radius: 8px; background: #fff; margin-top: 15px; position: relative; touch-action: none; height: 140px; overflow: hidden; }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+        .sig-label { position: absolute; top: 10px; left: 12px; color: #bdc3c7; font-size: 0.75rem; pointer-events: none; }
+        
+        .btn-mini { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; float: right; margin-top: 8px; font-weight: 600; }
+
+        /* PREVIEW CARD */
+        .preview-card { background: white; border-radius: 12px; padding: 25px; margin-top: 30px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.06); display: none; }
+        .preview-list { font-size: 0.9rem; color: #444; margin-bottom: 20px; }
+        .preview-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
+        .preview-item:last-child { border-bottom: none; }
+
+        /* --- PRINT MODE (PDF) --- */
+        #print-area { display: none; }
+        
+        @media print {
+            body { background: white; margin: 0; padding: 0; color: #000; }
+            .container { display: none; }
+            #print-area { display: block; position: absolute; top: 0; left: 0; width: 100%; padding: 40px 50px; font-family: 'Times New Roman', Times, serif; }
+            
+            .p-header { border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .p-vet-name { font-size: 24px; font-weight: bold; text-transform: uppercase; color: #000; }
+            .p-vet-crmv { font-size: 14px; margin-top: 5px; }
+            .p-meta { text-align: right; font-size: 12px; }
+            
+            .p-box { border: 1px solid #999; background: #f9f9f9; padding: 12px; margin-bottom: 25px; font-size: 14px; border-radius: 4px; -webkit-print-color-adjust: exact; }
+            .p-title { text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 25px; text-transform: uppercase; }
+            
+            .p-item { margin-bottom: 18px; page-break-inside: avoid; }
+            .p-med-name { font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; }
+            .p-med-ref { font-weight: normal; font-size: 12px; font-style: italic; color: #444; }
+            .p-med-details { margin-left: 20px; font-size: 14px; margin-top: 4px; line-height: 1.4; }
+            
+            .p-footer { margin-top: 60px; text-align: center; page-break-inside: avoid; position: relative; }
+            .p-stamp-img { width: 200px; height: auto; display: block; margin: 0 auto 5px auto; }
+            .p-line { border-top: 1px solid #000; width: 250px; margin: 40px auto 5px auto; display: none; }
+            .p-legal { font-size: 10px; color: #666; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="app-header"><h2>🏥 VetManager <small style="opacity:0.8; font-size:0.8em">v10.0</small></h2></div>
+
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('cadastro')">📝 Prescrição</div>
+        <div class="nav-item" onclick="switchTab('config')">⚙️ Médico</div>
+    </div>
+
+    <div id="tab-cadastro" class="tab-content active">
+        
+        <div class="section-title">1. Dados do Paciente</div>
+        <input type="text" id="tutor" placeholder="Nome do Tutor">
+        <div style="display:flex; gap:10px">
+            <input type="text" id="animal" placeholder="Nome do Animal" style="flex:2">
+            <input type="number" id="peso" placeholder="Peso (kg)" step="0.1" style="flex:1">
+        </div>
+        <label>Espécie:</label>
+        <select id="especie">
+            <option value="canino">🐶 Canino (Cão)</option>
+            <option value="felino">🐱 Felino (Gato)</option>
+        </select>
+
+        <div class="section-title">2. Selecione as Indicações Clínicas</div>
+        <div class="symptoms-list" id="listaSintomas">
+            </div>
+
+        <div id="canvasArea" style="display:none;">
+            <div class="section-title">3. Assinatura Manual</div>
+            <div class="signature-wrapper">
+                <span class="sig-label">Desenhe sua assinatura...</span>
+                <canvas id="sigCanvas"></canvas>
+            </div>
+            <button class="btn-mini" onclick="limparCanvas()">Limpar Assinatura</button>
+            <div style="clear:both"></div>
+        </div>
+        
+        <div id="stampStatus" style="display:none; margin-top:25px; background:#e8f8f5; color:#27ae60; padding:15px; border-radius:8px; text-align:center; border: 1px solid #c3e6cb; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            ✅ <strong>Carimbo Digital Ativo</strong><br>
+            <span style="font-size:0.85rem">Sua imagem será aplicada automaticamente no PDF.</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="calcular()">🚀 Calcular Prescrição</button>
+        
+        <div id="previewArea" class="preview-card">
+            <h3 style="margin-top:0; text-align:center; color:#2c3e50; border-bottom:1px solid #eee; padding-bottom:15px;">Resumo da Receita</h3>
+            <div id="previewList" class="preview-list"></div>
+            
+            <button class="btn btn-share" onclick="imprimir()">
+                📄 Gerar PDF & Compartilhar
+            </button>
+            <div class="share-hint">
+                💡 <strong>Dica:</strong> Na tela de impressão, use o botão nativo do celular <strong>"Compartilhar"</strong> para enviar o PDF direto no WhatsApp do cliente.
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-config" class="tab-content">
+        <div class="section-title">👨‍⚕️ Dados do Profissional</div>
+        <input type="text" id="vetNome" placeholder="Nome Completo (Dr. ...)">
+        <input type="text" id="vetCRMV" placeholder="CRMV / UF">
+        <input type="text" id="vetContato" placeholder="Telefone / Clínica">
+
+        <div class="section-title">🖼️ Carimbo Digital (PNG)</div>
+        <div class="stamp-upload-area">
+            <p style="font-size:0.85rem; color:#666; margin-bottom:15px">
+                Use uma imagem PNG transparente (600x300px) para máxima qualidade.
+            </p>
+            <input type="file" id="stampInput" accept="image/*" onchange="salvarCarimbo()">
+            <img id="stampPreview" class="stamp-preview">
+            <br>
+            <button class="btn-mini" style="float:none; margin-top:15px; background:#95a5a6; width:auto; padding:8px 15px;" onclick="removerCarimbo()">🗑️ Remover Carimbo</button>
+        </div>
+        <button class="btn btn-primary" onclick="salvarTexto()" style="margin-top:25px">💾 Salvar Alterações</button>
+    </div>
+</div>
+
+<div id="print-area">
+    <div class="p-header">
+        <div>
+            <div class="p-vet-name" id="pNome">Dr. Veterinário</div>
+            <div class="p-vet-crmv" id="pCRMV">CRMV: ---</div>
+        </div>
+        <div class="p-meta">
+            <span id="pContato"></span><br>Data: <span id="pData"></span>
+        </div>
+    </div>
+
+    <div class="p-box">
+        <strong>Tutor:</strong> <span id="pTutor"></span> | 
+        <strong>Paciente:</strong> <span id="pAnimal"></span> (<span id="pEspecie"></span>)<br>
+        <strong>Peso:</strong> <span id="pPeso"></span> kg
+    </div>
+
+    <div class="p-title">RECEITUÁRIO VETERINÁRIO</div>
+    <div id="pLista"></div>
+
+    <div class="p-footer">
+        <img id="pStampImg" class="p-stamp-img">
+        <div id="pLine" class="p-line"></div>
+        <div style="font-weight:bold" id="pNomeRodape">Dr. Veterinário</div>
+        <div class="p-legal">
+            Documento gerado eletronicamente. As doses foram ajustadas (arredondamento seguro) para facilitar a administração em seringas comerciais.<br>
+            Antibióticos controlados: Válido mediante assinatura física ou certificação digital ICP-Brasil.
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ==========================================================================
+       1. BANCO DE DADOS (TOP 20 PROTOCOLOS CLÍNICOS)
+       ========================================================================== */
+    const database = [
+        // GRUPO: INFECÇÕES / ANTIBIÓTICOS
+        { cat: "Antimicrobianos", id: 1, p: "Infecção Pele / Urinária (Amox)", n: "Amoxicilina + Clavulanato", r: "Synulox/Agemoxi", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10 a 14 dias" },
+        { cat: "Antimicrobianos", id: 9, p: "Piodermite / Infecção Pele (Cefa)", n: "Cefalexina", r: "Keflex/PetSporin", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14 a 21 dias" },
+        { cat: "Antimicrobianos", id: 2, p: "Giardíase / Entérico", n: "Metronidazol", r: "Giardicid", d: 15, c: 40, u: "ml", a: "Susp. 40mg/ml", f: "12/12h", t: "5 a 7 dias" },
+        { cat: "Antimicrobianos", id: 5, p: "Hemoparasitose / Carrapato", n: "Doxiciclina", r: "Doxitec", d: 10, c: 80, u: "comp", a: "Comp. 80mg", f: "24/24h", t: "28 dias" },
+        { cat: "Antimicrobianos", id: 10, p: "Infecção Geral / Respiratória", n: "Enrofloxacina", r: "Baytril/Flotril", d: 5, c: 50, u: "comp", a: "Comp. 50mg", f: "24/24h", t: "7 a 10 dias" },
+        { cat: "Antimicrobianos", id: 19, p: "Infecção Bucal / Respiratória", n: "Azitromicina", r: "Azitrophar", d: 10, c: 40, u: "ml", a: "Susp. 200mg/5ml", f: "24/24h", t: "5 dias" },
+        
+        // GRUPO: DOR & INFLAMAÇÃO
+        { cat: "Dor e Inflamação", id: 3, p: "Dor / Inflamação (AINE)", n: "Meloxicam", r: "Maxicam", dog: 0.1, cat: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3 a 4 dias" },
+        { cat: "Dor e Inflamação", id: 7, p: "Febre / Dor Aguda", n: "Dipirona", r: "Novalgina", d: 25, c: 500, u: "ml", a: "Gotas 500mg/ml", f: "6/6h", t: "Se houver dor" },
+        { cat: "Dor e Inflamação", id: 11, p: "Dor Forte / Pós-Operatório", n: "Tramadol", r: "Cronidor", d: 3, c: 50, u: "comp", a: "Comp. 50mg", f: "8/8h", t: "3 a 5 dias" },
+        { cat: "Dor e Inflamação", id: 6, p: "Alergia / Coceira (Corticoide)", n: "Prednisolona", r: "Predsim", d: 0.5, c: 5, u: "comp", a: "Comp. 5mg", f: "24/24h", t: "5 a 7 dias" },
+        { cat: "Dor e Inflamação", id: 17, p: "Dor Crônica / Neuropática", n: "Gabapentina", r: "Gabapentina", d: 10, c: 100, u: "comp", a: "Cápsula 100mg", f: "12/12h", t: "Uso contínuo" },
+
+        // GRUPO: GASTROINTESTINAL
+        { cat: "Gastrointestinal", id: 4, p: "Vômito (Ondansetrona)", n: "Ondansetrona", r: "Vonau", d: 0.5, c: 2, u: "ml", a: "Sol. 2mg/ml", f: "8/8h", t: "Se vômito" },
+        { cat: "Gastrointestinal", id: 12, p: "Vômito / Motilidade (Plasil)", n: "Metoclopramida", r: "Plasil", d: 0.5, c: 4, u: "ml", a: "Gotas 4mg/ml", f: "8/8h", t: "Se vômito" },
+        { cat: "Gastrointestinal", id: 8, p: "Proteção Gástrica (Jejum)", n: "Omeprazol", r: "Gaviz", d: 1, c: 10, u: "comp", a: "Cáps. 10mg", f: "24/24h", t: "Jejum pela manhã" },
+        { cat: "Gastrointestinal", id: 18, p: "Úlcera / Esofagite", n: "Sucralfato", r: "Sucrafilm", d: 30, c: 200, u: "ml", a: "Susp. 1g/5ml", f: "8/8h", t: "5 a 7 dias" },
+
+        // GRUPO: DIVERSOS
+        { cat: "Dermatologia e Parasitas", id: 13, p: "Infecção Fúngica (Malassezia)", n: "Cetoconazol", r: "Cetoconazol", d: 10, c: 200, u: "comp", a: "Comp. 200mg", f: "12/12h", t: "14 a 21 dias" },
+        { cat: "Dermatologia e Parasitas", id: 14, p: "Sarna / Verminose", n: "Ivermectina", r: "Ivercanis", d: 0.2, c: 3, u: "comp", a: "Comp. 3mg", f: "Dose Única", t: "Repetir em 15 dias" },
+        { cat: "Respiratório", id: 15, p: "Tosse / Secreção (Mucolítico)", n: "Acetilcisteína", r: "Fluimucil", d: 10, c: 20, u: "ml", a: "Xarope 20mg/ml", f: "12/12h", t: "5 a 7 dias" },
+        { cat: "Cardio e Neuro", id: 16, p: "Insuficiência Cardíaca / Edema", n: "Furosemida", r: "Lasix", d: 2, c: 40, u: "comp", a: "Comp. 40mg", f: "12/12h", t: "Uso contínuo" },
+        { cat: "Cardio e Neuro", id: 20, p: "Sedação Leve / Transporte", n: "Acepromazina", r: "Acepran", d: 0.5, c: 10, u: "ml", a: "Gotas 10mg/ml", f: "Se necessário", t: "40min antes" }
+    ];
+
+    /* ==========================================================================
+       2. INICIALIZAÇÃO DO APP
+       ========================================================================== */
+    const canvas = document.getElementById('sigCanvas');
+    const ctx = canvas.getContext('2d');
+    let cacheRx = [];
+
+    window.onload = () => {
+        carregarConfig();
+        gerarListaOrdenada();
+        checarCarimbo();
+        setupCanvas();
+    };
+
+    /* ==========================================================================
+       3. RENDERIZAÇÃO DA LISTA (ORGANIZADA POR CATEGORIA)
+       ========================================================================== */
+    function gerarListaOrdenada() {
+        const div = document.getElementById('listaSintomas');
+        div.innerHTML = "";
+        
+        // Agrupar por categoria
+        const grouped = database.reduce((acc, curr) => {
+            (acc[curr.cat] = acc[curr.cat] || []).push(curr);
+            return acc;
+        }, {});
+
+        // Renderizar grupos
+        for (const [cat, items] of Object.entries(grouped)) {
+            div.innerHTML += `<div class="symptom-group-title">${cat}</div>`;
+            items.forEach(item => {
+                div.innerHTML += `
+                    <label class="symptom-item">
+                        <input type="checkbox" value="${item.id}">
+                        <div class="pat-content">
+                            <span class="pat-name">${item.p}</span>
+                            <span class="med-name">${item.n} (${item.r})</span>
+                        </div>
+                    </label>
+                `;
+            });
+        }
+    }
+
+    /* ==========================================================================
+       4. LÓGICA DE CÁLCULO INTELIGENTE (SMART ROUNDING v3.0)
+       ========================================================================== */
+    function formatarDoseSegura(val, type, nome) {
+        // --- COMPRIMIDOS ---
+        if(type !== 'ml') {
+            const dec = val - Math.floor(val);
+            if(dec < 0.1 || dec > 0.9) return Math.round(val) + " comp";
+            if(val <= 0.25) return "1/4 comp";
+            if(val <= 0.6) return "1/2 comp";
+            if(val <= 0.85) return "3/4 comp";
+            return Math.ceil(val) + " comp";
+        }
+        
+        // --- LÍQUIDOS ---
+        let vol = val;
+        
+        // Regra 1: Mínimo absoluto (evitar 0.0)
+        if(vol < 0.1) vol = 0.1;
+        
+        // Regra 2: Volumes micro (< 3ml) -> Precisão 0.1
+        else if(vol < 3) {
+            vol = Math.round(vol * 10) / 10;
+        }
+        
+        // Regra 3: Volumes médios (3-10ml) -> Precisão 0.2 (Seringas 5/10ml)
+        else if (vol <= 10) {
+             vol = Math.round(vol * 5) / 5;
+        }
+
+        // Regra 4: Volumes grandes (> 10ml) -> Precisão 0.5 (Seringas 20ml)
+        else {
+            vol = (Math.round(vol * 2) / 2).toFixed(1);
+        }
+        
+        // Limpeza visual (remove .0 se inteiro)
+        if (typeof vol === 'number') {
+            if (vol % 1 === 0) vol = vol.toFixed(0);
+            else vol = vol.toFixed(1);
+        }
+
+        let txt = vol + " ml";
+        
+        // Hint de gotas para volumes pequenos de alta concentração
+        if(val < 3 && (nome.includes("Dipirona") || nome.includes("Ondansetrona") || nome.includes("Metoclopramida") || nome.includes("Acepromazina"))) {
+            txt += ` (~${Math.round(val*20)} gts)`;
+        }
+        return txt;
+    }
+
+    function calcular() {
+        const peso = parseFloat(document.getElementById('peso').value);
+        const esp = document.getElementById('especie').value;
+        const checks = document.querySelectorAll('#listaSintomas input:checked');
+
+        if(!peso || checks.length === 0) { 
+            alert("⚠️ Atenção:\nPor favor, preencha o PESO e selecione ao menos uma PATOLOGIA."); 
+            return; 
+        }
+
+        cacheRx = [];
+        const prev = document.getElementById('previewList');
+        prev.innerHTML = "";
+
+        checks.forEach(chk => {
+            const m = database.find(p => p.id == chk.value);
+            
+            // Ajuste Meloxicam (Cão vs Gato)
+            let doseBase = m.d;
+            if(m.n === 'Meloxicam') doseBase = (esp === 'canino') ? m.dog : m.cat;
+
+            // Cálculo Matemático
+            const qtdReal = (peso * doseBase) / m.c;
+            
+            // Aplicação da Lógica de Arredondamento
+            const doseFinal = formatarDoseSegura(qtdReal, m.u, m.n);
+
+            cacheRx.push({...m, doseFinal});
+
+            // Adicionar ao Preview na tela
+            prev.innerHTML += `
+                <div class="preview-item">
+                    <strong>${m.n}</strong>: <span style="color:#c0392b; font-weight:700">${doseFinal}</span>
+                    <br><small style="color:#666">${m.f} | ${m.t}</small>
+                </div>
+            `;
+        });
+
+        const prevArea = document.getElementById('previewArea');
+        prevArea.style.display = 'block';
+        
+        // Scroll suave até o resultado
+        setTimeout(() => {
+            prevArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    /* ==========================================================================
+       5. GERAÇÃO DE PDF E COMPARTILHAMENTO
+       ========================================================================== */
+    function imprimir() {
+        // Transferir dados para área de impressão
+        document.getElementById('pNome').innerText = localStorage.getItem('vetNome') || "Veterinário";
+        document.getElementById('pCRMV').innerText = localStorage.getItem('vetCRMV') || "";
+        document.getElementById('pContato').innerText = localStorage.getItem('vetContato') || "";
+        document.getElementById('pData').innerText = new Date().toLocaleDateString('pt-BR');
+        
+        document.getElementById('pTutor').innerText = document.getElementById('tutor').value || "---";
+        document.getElementById('pAnimal').innerText = document.getElementById('animal').value || "---";
+        document.getElementById('pEspecie').innerText = document.getElementById('especie').value;
+        document.getElementById('pPeso').innerText = document.getElementById('peso').value;
+        document.getElementById('pNomeRodape').innerText = localStorage.getItem('vetNome') || "Veterinário";
+
+        // Gerar Lista de Medicamentos
+        const pl = document.getElementById('pLista');
+        pl.innerHTML = "";
+        cacheRx.forEach((m, i) => {
+            pl.innerHTML += `
+                <div class="p-item">
+                    <div class="p-med-name">
+                        <span>${i+1}. ${m.n} <small>(${m.a})</small></span>
+                        <span class="p-med-ref">Ref: ${m.r}</span>
+                    </div>
+                    <div class="p-med-details">
+                        <strong>Administrar:</strong> ${m.doseFinal} por via oral.<br>
+                        <strong>Posologia:</strong> ${m.f} durante ${m.t}.
+                    </div>
+                </div>
+            `;
+        });
+
+        // Lógica de Assinatura (Carimbo Imagem vs Canvas Desenho)
+        const stamp = localStorage.getItem('vetStampImg');
+        const img = document.getElementById('pStampImg');
+        const line = document.getElementById('pLine');
+
+        if(stamp) {
+            img.src = stamp;
+            img.style.display = 'block';
+            line.style.display = 'none';
+        } else {
+            // Fallback para Canvas
+            img.src = canvas.toDataURL();
+            img.style.display = 'block';
+            line.style.display = 'none';
+        }
+
+        window.print();
+    }
+
+    /* ==========================================================================
+       6. SISTEMA DE CONFIGURAÇÃO E PERSISTÊNCIA
+       ========================================================================== */
+    function switchTab(t) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById('tab-'+t).classList.add('active');
+        document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active');
+        
+        if(t==='cadastro') { 
+            checarCarimbo(); 
+            setTimeout(resizeCanvas, 200); 
+        }
+    }
+    
+    function salvarTexto() {
+        localStorage.setItem('vetNome', document.getElementById('vetNome').value);
+        localStorage.setItem('vetCRMV', document.getElementById('vetCRMV').value);
+        localStorage.setItem('vetContato', document.getElementById('vetContato').value);
+        alert("✅ Dados salvos com sucesso!");
+    }
+
+    function salvarCarimbo() {
+        const f = document.getElementById('stampInput').files[0];
+        if(!f) return;
+        
+        // Limite de tamanho (2.5MB) para não estourar LocalStorage
+        if(f.size > 2500000) {
+            alert("⚠️ Imagem muito grande. Use um arquivo menor que 2MB.");
+            return;
+        }
+
+        const r = new FileReader();
+        r.onloadend = () => { 
+            try {
+                localStorage.setItem('vetStampImg', r.result); 
+                checarCarimbo(); 
+                alert("✅ Carimbo Digital salvo!"); 
+            } catch(e) {
+                alert("❌ Erro ao salvar: Imagem muito complexa.");
+            }
+        };
+        r.readAsDataURL(f);
+    }
+    
+    function removerCarimbo() { 
+        if(confirm("Deseja remover o carimbo salvo?")) {
+            localStorage.removeItem('vetStampImg'); 
+            checarCarimbo();
+            document.getElementById('stampInput').value = "";
+        }
+    }
+    
+    function carregarConfig() {
+        document.getElementById('vetNome').value = localStorage.getItem('vetNome')||"";
+        document.getElementById('vetCRMV').value = localStorage.getItem('vetCRMV')||"";
+        document.getElementById('vetContato').value = localStorage.getItem('vetContato')||"";
+    }
+    
+    function checarCarimbo() {
+        if(localStorage.getItem('vetStampImg')) {
+            document.getElementById('canvasArea').style.display='none';
+            document.getElementById('stampStatus').style.display='block';
+        } else {
+            document.getElementById('canvasArea').style.display='block';
+            document.getElementById('stampStatus').style.display='none';
+        }
+    }
+
+    /* ==========================================================================
+       7. CANVAS DE ASSINATURA (MINIFICADO)
+       ========================================================================== */
+    let drawing=false;
+    function setupCanvas(){ ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e,ds)); ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e,de)); ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e,dd)); }
+    function resizeCanvas(){ const p=canvas.parentElement; if(p.clientWidth>0){canvas.width=p.clientWidth; canvas.height=p.clientHeight; ctx.lineWidth=2; ctx.strokeStyle="#000080"; ctx.lineCap="round";} }
+    function ds(e){ drawing=true; ctx.beginPath(); dd(e); }
+    function de(){ drawing=false; ctx.beginPath(); }
+    function dd(e){ if(!drawing)return; e.preventDefault(); const r=canvas.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; ctx.lineTo(x,y); ctx.stroke(); }
+    function limparCanvas(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+</script>
+</body>
+</html>
