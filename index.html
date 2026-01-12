@@ -3,89 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VetManager Pro v12.0</title>
+    <title>VetManager v13</title>
     <style>
         /* --- CORE CSS --- */
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f4f7f6; --card: #ffffff; --border: #e1e4e8; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; color: #333; }
         .container { max-width: 650px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 0 25px rgba(0,0,0,0.05); }
 
-        /* Header & Nav */
+        /* HEADER */
         .app-header { background: var(--dark); color: white; padding: 15px; text-align: center; }
         .nav-tabs { display: flex; background: #34495e; position: sticky; top: 0; z-index: 100; }
-        .nav-item { flex: 1; padding: 15px; text-align: center; color: #bdc3c7; cursor: pointer; border-bottom: 4px solid transparent; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; transition: 0.3s; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; color: #bdc3c7; cursor: pointer; border-bottom: 4px solid transparent; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; transition: 0.3s; }
         .nav-item.active { color: white; border-bottom-color: var(--primary); background: #2c3e50; }
         .tab-content { display: none; padding: 20px; animation: fadeUp 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Form Elements */
+        /* FORM */
         .section-title { color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 25px; font-weight: 800; display: flex; align-items: center; font-size: 0.95rem; text-transform: uppercase; }
         label { display: block; margin-top: 12px; font-weight: 600; color: #555; font-size: 0.9rem; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: 0.2s; font-family: inherit; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
 
-        /* LISTA DE SINTOMAS */
-        .symptoms-list { max-height: 350px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
-        .symptom-group-title { background: #f1f2f6; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+        /* LISTA MELHORADA (SEPARAÇÃO CLARA) */
+        .symptoms-list { max-height: 400px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
+        .symptom-group-title { background: #f8f9fa; padding: 10px 15px; font-size: 0.8rem; font-weight: bold; color: #2c3e50; text-transform: uppercase; border-bottom: 1px solid #eee; margin-top: 0; }
         
-        .symptom-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
+        .symptom-item { display: flex; align-items: flex-start; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; border-left: 4px solid transparent; }
         .symptom-item:last-child { border-bottom: none; }
         .symptom-item.selected { background-color: #e8f8f5; border-left-color: var(--primary); }
-        .symptom-item.selected .pat-name { color: var(--primary); }
         
-        .symptom-item input { width: 22px; height: 22px; margin: 0 15px 0 0; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-        .pat-name { font-size: 0.95rem; font-weight: 700; color: #2c3e50; display: block; }
-        .med-name { font-size: 0.8rem; color: #7f8c8d; }
+        .symptom-item input { width: 22px; height: 22px; margin: 2px 15px 0 0; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+        
+        .pat-block { display: flex; flex-direction: column; }
+        .pat-diagnosis { font-size: 0.95rem; font-weight: 700; color: #e74c3c; display: block; margin-bottom: 4px; }
+        .pat-treatment { font-size: 0.85rem; color: #27ae60; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .pat-details { font-size: 0.75rem; color: #7f8c8d; font-weight: normal; margin-left: 20px;}
 
-        /* CAMPO LIVRE */
-        .manual-entry-box { background: #fdfdfd; border: 1px dashed #bdc3c7; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .manual-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; font-style: italic; }
-
-        /* AVISO DE PESO */
-        .weight-alert { display: none; margin-top: 10px; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #ffeeba; align-items: center; gap: 8px; }
-        .weight-alert.visible { display: flex; }
-
-        /* BOTOES */
+        /* BOTOES E PREVIEW */
         .btn { width: 100%; padding: 16px; margin-top: 20px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-transform: uppercase; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-share { background: #3498db; color: white; margin-top: 10px; }
         
-        /* PREVIEW */
         .preview-card { background: white; border-radius: 10px; padding: 20px; margin-top: 25px; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: none; }
-        .preview-list { margin-bottom: 20px; }
         .preview-item { border-bottom: 1px dashed #eee; padding: 10px 0; font-size: 0.9rem; color: #444; }
 
-        /* CARIMBO */
+        /* ALERTAS E CARIMBO */
+        .weight-alert { display: none; margin-top: 10px; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #ffeeba; }
+        .weight-alert.visible { display: block; }
+        
         .stamp-area { border: 2px dashed #bdc3c7; padding: 20px; text-align: center; border-radius: 8px; margin-top: 10px; background: #fafafa; }
         .stamp-preview { max-width: 100%; height: 80px; display: none; margin: 10px auto; border: 1px solid #ddd; padding: 5px; background: white; }
 
-        /* ASSINATURA CANVAS */
+        /* CANVAS */
         .signature-wrapper { border: 2px dashed #95a5a6; border-radius: 8px; background: #fff; margin-top: 10px; position: relative; height: 120px; }
         canvas { width: 100%; height: 100%; cursor: crosshair; }
         .sig-label { position: absolute; top: 5px; left: 10px; color: #ccc; font-size: 0.7rem; pointer-events: none; }
 
-        /* --- PRINT MODE --- */
+        /* PRINT MODE */
         #print-area { display: none; }
         @page { size: A4; margin: 1.5cm; }
-        
         @media print {
             body { background: white; margin: 0; padding: 0; }
             .container { display: none; }
-            
             #print-area { display: block; width: 100%; font-family: 'Times New Roman', serif; color: #000; }
-            
             .p-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
             .p-vet-name { font-size: 22px; font-weight: bold; text-transform: uppercase; }
-            
             .p-box { border: 1px solid #999; background: #fdfdfd; padding: 10px; margin-bottom: 20px; font-size: 14px; border-radius: 4px; }
             .p-title { text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 20px; text-transform: uppercase; }
-            
             .p-item { margin-bottom: 15px; page-break-inside: avoid; }
-            .p-med-name { font-weight: bold; font-size: 15px; }
+            .p-med-name { font-weight: bold; font-size: 15px; text-transform: uppercase; }
+            .p-med-active { font-size: 12px; font-style: italic; font-weight: normal; text-transform: none; }
             .p-med-details { margin-left: 20px; font-size: 14px; margin-top: 4px; line-height: 1.4; }
-            
             .p-footer { margin-top: 40px; text-align: center; page-break-inside: avoid; }
             .p-stamp-img { width: 200px; display: block; margin: 0 auto; }
             .p-timestamp { font-size: 9px; color: #666; text-align: right; margin-top: 30px; border-top: 1px solid #eee; padding-top: 5px; }
@@ -95,7 +85,7 @@
 <body>
 
 <div class="container">
-    <div class="app-header"><h2>🏥 VetManager <small style="font-size:0.7em; opacity:0.8">v12.0</small></h2></div>
+    <div class="app-header"><h2>🏥 VetManager <small style="font-size:0.7em; opacity:0.8">v13.0</small></h2></div>
 
     <div class="nav-tabs">
         <div class="nav-item active" onclick="switchTab('cadastro')">📝 Prescrição</div>
@@ -104,7 +94,7 @@
 
     <div id="tab-cadastro" class="tab-content active">
         
-        <div class="section-title">1. Paciente</div>
+        <div class="section-title">1. Dados do Paciente</div>
         <input type="text" id="tutor" placeholder="Nome do Tutor">
         
         <div style="display:flex; gap:10px">
@@ -127,16 +117,14 @@
             ⚠️ <strong>Peso > 20kg:</strong> Sugerimos preferência por medicação via Oral.
         </div>
 
-        <div class="section-title">2. Protocolos (Selecione)</div>
+        <div class="section-title">2. Protocolos Clínicos</div>
         <div class="symptoms-list" id="listaSintomas">
             </div>
 
-        <div class="section-title">3. Outro / Manual</div>
-        <div class="manual-entry-box">
-            <label style="margin-top:0; font-size:0.8rem">Diagnóstico:</label>
-            <input type="text" id="manualPat" placeholder="Ex: Otite Bacteriana">
-            <label style="font-size:0.8rem">Prescrição Completa:</label>
-            <textarea id="manualMed" rows="3" placeholder="Ex: Natalene - 3 gotas a cada 12h..."></textarea>
+        <div class="section-title">3. Adicional / Manual</div>
+        <div class="manual-entry-box" style="background:#fff; border:1px solid #ccc; padding:10px; border-radius:8px;">
+            <input type="text" id="manualPat" placeholder="Diagnóstico (Ex: Otite)">
+            <textarea id="manualMed" rows="2" placeholder="Tratamento (Ex: Natalene 3 gotas...)"></textarea>
         </div>
 
         <div id="canvasArea" style="display:none;">
@@ -160,7 +148,7 @@
                 📄 Gerar PDF & Compartilhar
             </button>
             <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#777;">
-                O arquivo será salvo com Nome + Data + Hora automaticamente.
+                O arquivo será salvo com data e nome automaticamente.
             </div>
         </div>
     </div>
@@ -212,24 +200,36 @@
 </div>
 
 <script>
-    /* BANCO DE DADOS */
+    /* BANCO DE DADOS VETERINÁRIO (VET FIRST)
+       brand: Nome Comercial (Destaque)
+       salt: Princípio Ativo (Detalhe)
+    */
     const database = [
-        { cat: "Geral", id: 1, p: "Infecção Pele / Urinária", n: "Amoxicilina + Clavulanato", r: "Synulox", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10 dias" },
-        { cat: "Geral", id: 9, p: "Piodermite / Infecção", n: "Cefalexina", r: "Keflex", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14 dias" },
-        { cat: "Geral", id: 2, p: "Giardíase / Diarreia", n: "Metronidazol", r: "Giardicid", d: 15, c: 40, u: "ml", a: "Susp. 40mg/ml", f: "12/12h", t: "5 dias" },
-        { cat: "Geral", id: 5, p: "Hemoparasitose", n: "Doxiciclina", r: "Doxitec", d: 10, c: 80, u: "comp", a: "Comp 80mg", f: "24/24h", t: "28 dias" },
-        { cat: "Dor", id: 3, p: "Inflamação / Dor", n: "Meloxicam", r: "Maxicam", dog: 0.1, cat: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3 dias" },
-        { cat: "Dor", id: 7, p: "Febre / Dor Aguda", n: "Dipirona", r: "Novalgina", d: 25, c: 500, u: "ml", a: "Gotas 500mg/ml", f: "6/6h", t: "Se dor" },
-        { cat: "Gastro", id: 4, p: "Vômito / Enjoo", n: "Ondansetrona", r: "Vonau", d: 0.5, c: 2, u: "ml", a: "2mg/ml", f: "8/8h", t: "Se vômito" },
-        { cat: "Gastro", id: 8, p: "Proteção Gástrica", n: "Omeprazol", r: "Gaviz", d: 1, c: 10, u: "comp", a: "Cáps 10mg", f: "24/24h", t: "Jejum" },
-        { cat: "Outros", id: 14, p: "Verminose", n: "Ivermectina", r: "Ivercanis", d: 0.2, c: 3, u: "comp", a: "Comp 3mg", f: "Dose Única", t: "Repetir 15 dias" }
+        // GRUPO: ANTIBIÓTICOS / SISTÊMICOS
+        { cat: "Antimicrobianos", id: 1, p: "Infecção Pele/Urinária", brand: "Synulox / Agemoxi", salt: "Amox. + Clavulanato", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10 dias" },
+        { cat: "Antimicrobianos", id: 9, p: "Piodermite Profunda", brand: "Rilexine / Keflex", salt: "Cefalexina", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14 a 21 dias" },
+        { cat: "Antimicrobianos", id: 2, p: "Giardíase / Entérico", brand: "Giardicid", salt: "Metronidazol + Sulf.", d: 15, c: 50, u: "ml", a: "Susp. 50mg/ml", f: "12/12h", t: "5 a 7 dias" }, // Ajuste concentração Giardicid
+        { cat: "Antimicrobianos", id: 5, p: "Hemoparasitose", brand: "Doxitec", salt: "Doxiciclina", d: 10, c: 80, u: "comp", a: "Comp 80mg", f: "24/24h", t: "28 dias" },
+        { cat: "Antimicrobianos", id: 10, p: "Infecção Respiratória", brand: "Baytril / Flotril", salt: "Enrofloxacina", d: 5, c: 50, u: "comp", a: "Comp 50mg", f: "24/24h", t: "7 a 10 dias" },
+
+        // GRUPO: DOR & INFLAMAÇÃO
+        { cat: "Dor e Inflamação", id: 3, p: "Dor / Inflamação", brand: "Maxicam / Meloxivet", salt: "Meloxicam", dog: 0.1, cat: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3 a 4 dias" },
+        { cat: "Dor e Inflamação", id: 11, p: "Dor Moderada a Forte", brand: "Cronidor / Tramadol", salt: "Clorid. Tramadol", d: 3, c: 50, u: "comp", a: "Comp. 50mg", f: "8/8h", t: "3 a 5 dias" },
+        { cat: "Dor e Inflamação", id: 6, p: "Alergia / Coceira", brand: "Prediderm / Predsim", salt: "Prednisolona", d: 0.5, c: 5, u: "comp", a: "Comp. 5mg", f: "24/24h", t: "5 a 7 dias" },
+        { cat: "Dor e Inflamação", id: 7, p: "Febre / Dor Simples", brand: "Dipirona", salt: "Uso Humano/Vet", d: 25, c: 500, u: "ml", a: "Gotas 500mg/ml", f: "6/6h", t: "Se houver dor" },
+
+        // GRUPO: GASTRO
+        { cat: "Gastrointestinal", id: 8, p: "Proteção Gástrica", brand: "Gaviz", salt: "Omeprazol", d: 1, c: 10, u: "comp", a: "Comp. 10mg", f: "24/24h", t: "Jejum" },
+        { cat: "Gastrointestinal", id: 4, p: "Vômito", brand: "Vonau Vet / Ondansetrona", salt: "Ondansetrona", d: 0.5, c: 2, u: "ml", a: "2mg/ml", f: "8/8h", t: "Se vômito" },
+
+        // GRUPO: PARASITAS
+        { cat: "Parasitas", id: 14, p: "Sarna / Vermes", brand: "Ivercanis / Mectimax", salt: "Ivermectina", d: 0.2, c: 3, u: "comp", a: "Comp 3mg", f: "Dose Única", t: "Repetir 15 dias" }
     ];
 
     /* INICIALIZAÇÃO */
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
     let cacheRx = [];
-    let originalTitle = document.title;
 
     window.onload = () => {
         carregarConfig();
@@ -238,7 +238,7 @@
         setupCanvas();
     };
 
-    /* VISUAL & FORM */
+    /* FUNÇÕES VISUAIS */
     function checkWeight() {
         const peso = parseFloat(document.getElementById('peso').value);
         const especie = document.getElementById('especie').value;
@@ -262,7 +262,11 @@
                 div.innerHTML += `
                     <label class="symptom-item">
                         <input type="checkbox" value="${item.id}" onchange="toggleSelect(this)">
-                        <div><span class="pat-name">${item.p}</span><span class="med-name">${item.n} (${item.r})</span></div>
+                        <div class="pat-block">
+                            <span class="pat-diagnosis">${item.p}</span>
+                            <span class="pat-treatment">💊 ${item.brand}</span>
+                            <span class="pat-details">(${item.salt} - ${item.a})</span>
+                        </div>
                     </label>
                 `;
             });
@@ -304,30 +308,37 @@
         checks.forEach(chk => {
             const m = database.find(p => p.id == chk.value);
             let doseBase = m.d;
-            if(m.n === 'Meloxicam') doseBase = (esp === 'canino') ? m.dog : m.cat;
+            if(m.brand.includes('Maxicam')) doseBase = (esp === 'canino') ? m.dog : m.cat;
             
             const qtd = (peso * doseBase) / m.c;
-            const doseFinal = formatDose(qtd, m.u, m.n);
+            const doseFinal = formatDose(qtd, m.u, m.brand);
             let via = (esp === 'canino' && peso > 20) ? "VIA ORAL (Preferencial)" : "via oral";
 
-            cacheRx.push({ n: m.n, r: m.r, a: m.a, dose: doseFinal, freq: m.f, dur: m.t, via: via });
-            prev.innerHTML += `<div class="preview-item"><strong>${m.n}</strong>: ${doseFinal}<br><small>${m.f}</small></div>`;
+            cacheRx.push({ brand: m.brand, salt: m.salt, a: m.a, dose: doseFinal, freq: m.f, dur: m.t, via: via });
+            prev.innerHTML += `<div class="preview-item"><strong>${m.brand}</strong>: ${doseFinal}<br><small>${m.f}</small></div>`;
         });
 
         if(manPat && manMed) {
-            cacheRx.push({ n: "Protocolo Manual", r: manPat, a: "Personalizado", dose: manMed, freq: "Conforme descrito", dur: "-", via: "-" });
+            cacheRx.push({ brand: "Protocolo Manual", salt: manPat, a: "Personalizado", dose: manMed, freq: "Conforme descrito", dur: "-", via: "-" });
             prev.innerHTML += `<div class="preview-item"><strong>${manPat}</strong><br><small>Personalizado</small></div>`;
         }
+
+        // --- ATUALIZAÇÃO DO TÍTULO (NOME DO ARQUIVO) NO MOMENTO DO CÁLCULO ---
+        const now = new Date();
+        const pad = (n) => n.toString().padStart(2, '0');
+        const nomeAnimal = (document.getElementById('animal').value || 'SemNome').replace(/[^a-z0-9]/gi, '');
+        const tipo = document.getElementById('especie').value === 'canino' ? 'Cao' : 'Gato';
+        const sexo = document.getElementById('sexo').value;
+        // Atualiza document.title agora para garantir que o navegador pegue
+        document.title = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}_Receita_(${tipo}-${sexo}-${nomeAnimal})`;
 
         document.getElementById('previewArea').style.display = 'block';
         document.getElementById('previewArea').scrollIntoView({behavior:'smooth'});
     }
 
-    /* IMPRESSÃO COM NOME DO ARQUIVO CUSTOMIZADO */
+    /* IMPRESSÃO */
     function imprimir() {
         const now = new Date();
-        
-        // Dados para o PDF
         document.getElementById('pNome').innerText = localStorage.getItem('vetNome');
         document.getElementById('pCRMV').innerText = localStorage.getItem('vetCRMV');
         document.getElementById('pContato').innerText = localStorage.getItem('vetContato');
@@ -339,45 +350,35 @@
         document.getElementById('pSexo').innerText = document.getElementById('sexo').value;
         document.getElementById('pPeso').innerText = document.getElementById('peso').value;
         document.getElementById('pNomeRodape').innerText = localStorage.getItem('vetNome');
-        document.getElementById('pTimestamp').innerText = `Gerado eletronicamente em: ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}`;
+        document.getElementById('pTimestamp').innerText = `Gerado eletronicamente em: ${now.toLocaleString('pt-BR')}`;
 
-        // Lista
         const pl = document.getElementById('pLista');
         pl.innerHTML = "";
         cacheRx.forEach((m, i) => {
             if(m.a === "Personalizado") {
-                pl.innerHTML += `<div class="p-item"><div class="p-med-name"><span>${i+1}. ${m.r}</span> <small>(Manual)</small></div><div class="p-med-details" style="white-space: pre-wrap;">${m.dose}</div></div>`;
+                pl.innerHTML += `<div class="p-item"><div class="p-med-name"><span>${i+1}. ${m.salt}</span> <small>(Manual)</small></div><div class="p-med-details" style="white-space: pre-wrap;">${m.dose}</div></div>`;
             } else {
-                pl.innerHTML += `<div class="p-item"><div class="p-med-name"><span>${i+1}. ${m.n} <small>(${m.a})</small></span> <span style="font-weight:normal; font-size:12px">Ref: ${m.r}</span></div><div class="p-med-details"><strong>Administrar:</strong> ${m.dose} ${m.via}.<br><strong>Posologia:</strong> ${m.freq} durante ${m.dur}.</div></div>`;
+                pl.innerHTML += `
+                <div class="p-item">
+                    <div class="p-med-name">
+                        <span>${i+1}. ${m.brand} <small>(${m.a})</small></span>
+                    </div>
+                    <div class="p-med-active">Princípio: ${m.salt}</div>
+                    <div class="p-med-details">
+                        <strong>Administrar:</strong> ${m.dose} ${m.via}.<br>
+                        <strong>Posologia:</strong> ${m.f} durante ${m.dur}.
+                    </div>
+                </div>`;
             }
         });
 
-        // Assinatura
         const stamp = localStorage.getItem('vetStampImg');
         const img = document.getElementById('pStampImg');
         const line = document.getElementById('pLine');
         if(stamp) { img.src = stamp; img.style.display='block'; line.style.display='none'; }
         else { img.src = canvas.toDataURL(); img.style.display='block'; line.style.display='none'; }
 
-        /* --- LÓGICA DE NOME DO ARQUIVO --- */
-        const pad = (n) => n.toString().padStart(2, '0');
-        const yyyy = now.getFullYear();
-        const mm = pad(now.getMonth() + 1);
-        const dd = pad(now.getDate());
-        const hh = pad(now.getHours());
-        const min = pad(now.getMinutes());
-        
-        const nomeAnimal = (document.getElementById('animal').value || 'SemNome').replace(/[^a-z0-9]/gi, '');
-        const tipo = document.getElementById('especie').value === 'canino' ? 'Cao' : 'Gato';
-        const sexo = document.getElementById('sexo').value;
-
-        // Formato: AAAA-MM-DD_HH-MM_Receita_(Tipo-Sexo-Nome)
-        document.title = `${yyyy}-${mm}-${dd}_${hh}-${min}_Receita_(${tipo}-${sexo}-${nomeAnimal})`;
-
         window.print();
-
-        // Volta ao título original
-        setTimeout(() => { document.title = originalTitle; }, 1000);
     }
 
     /* CONFIG & CANVAS */
