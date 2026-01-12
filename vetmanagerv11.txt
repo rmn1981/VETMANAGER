@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VetManager Pro v11.0</title>
+    <style>
+        /* --- CORE CSS --- */
+        :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f4f7f6; --card: #ffffff; --border: #e1e4e8; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; color: #333; }
+        .container { max-width: 650px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 0 25px rgba(0,0,0,0.05); }
+
+        /* Header & Nav */
+        .app-header { background: var(--dark); color: white; padding: 15px; text-align: center; }
+        .nav-tabs { display: flex; background: #34495e; position: sticky; top: 0; z-index: 100; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; color: #bdc3c7; cursor: pointer; border-bottom: 4px solid transparent; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; transition: 0.3s; }
+        .nav-item.active { color: white; border-bottom-color: var(--primary); background: #2c3e50; }
+        .tab-content { display: none; padding: 20px; animation: fadeUp 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Form Elements */
+        .section-title { color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 25px; font-weight: 800; display: flex; align-items: center; font-size: 0.95rem; text-transform: uppercase; }
+        label { display: block; margin-top: 12px; font-weight: 600; color: #555; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: 0.2s; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
+
+        /* LISTA DE SINTOMAS (CHECKBOX FIX) */
+        .symptoms-list { max-height: 350px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
+        .symptom-group-title { background: #f1f2f6; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .symptom-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
+        .symptom-item:last-child { border-bottom: none; }
+        
+        /* O "PULO DO GATO" VISUAL PARA O CHECKBOX */
+        .symptom-item.selected { background-color: #e8f8f5; border-left-color: var(--primary); }
+        .symptom-item.selected .pat-name { color: var(--primary); }
+        
+        .symptom-item input { width: 22px; height: 22px; margin: 0 15px 0 0; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+        .pat-name { font-size: 0.95rem; font-weight: 700; color: #2c3e50; display: block; }
+        .med-name { font-size: 0.8rem; color: #7f8c8d; }
+
+        /* CAMPO LIVRE */
+        .manual-entry-box { background: #fdfdfd; border: 1px dashed #bdc3c7; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .manual-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; font-style: italic; }
+
+        /* AVISO DE PESO */
+        .weight-alert { display: none; margin-top: 10px; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #ffeeba; align-items: center; gap: 8px; }
+        .weight-alert.visible { display: flex; }
+
+        /* BOTOES */
+        .btn { width: 100%; padding: 16px; margin-top: 20px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-transform: uppercase; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-share { background: #3498db; color: white; margin-top: 10px; }
+        
+        /* PREVIEW */
+        .preview-card { background: white; border-radius: 10px; padding: 20px; margin-top: 25px; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: none; }
+        .preview-list { margin-bottom: 20px; }
+        .preview-item { border-bottom: 1px dashed #eee; padding: 10px 0; font-size: 0.9rem; color: #444; }
+
+        /* CARIMBO */
+        .stamp-area { border: 2px dashed #bdc3c7; padding: 20px; text-align: center; border-radius: 8px; margin-top: 10px; background: #fafafa; }
+        .stamp-preview { max-width: 100%; height: 80px; display: none; margin: 10px auto; border: 1px solid #ddd; padding: 5px; background: white; }
+
+        /* ASSINATURA CANVAS */
+        .signature-wrapper { border: 2px dashed #95a5a6; border-radius: 8px; background: #fff; margin-top: 10px; position: relative; height: 120px; }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+        .sig-label { position: absolute; top: 5px; left: 10px; color: #ccc; font-size: 0.7rem; pointer-events: none; }
+
+        /* --- PRINT MODE (CORREÇÃO DE CORTE) --- */
+        #print-area { display: none; }
+        
+        @page { size: A4; margin: 1.5cm; } /* Margem segura para não cortar */
+        
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .container { display: none; } /* Esconde o App */
+            
+            #print-area { display: block; width: 100%; font-family: 'Times New Roman', serif; color: #000; }
+            
+            .p-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .p-vet-name { font-size: 22px; font-weight: bold; text-transform: uppercase; }
+            
+            .p-box { border: 1px solid #999; background: #fdfdfd; padding: 10px; margin-bottom: 20px; font-size: 14px; border-radius: 4px; }
+            .p-title { text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; margin-bottom: 20px; text-transform: uppercase; }
+            
+            .p-item { margin-bottom: 15px; page-break-inside: avoid; }
+            .p-med-name { font-weight: bold; font-size: 15px; }
+            .p-med-details { margin-left: 20px; font-size: 14px; margin-top: 4px; line-height: 1.4; }
+            
+            .p-footer { margin-top: 40px; text-align: center; page-break-inside: avoid; }
+            .p-stamp-img { width: 200px; display: block; margin: 0 auto; }
+            .p-timestamp { font-size: 9px; color: #666; text-align: right; margin-top: 30px; border-top: 1px solid #eee; padding-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="app-header"><h2>🏥 VetManager <small style="font-size:0.7em; opacity:0.8">v11.0</small></h2></div>
+
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('cadastro')">📝 Prescrição</div>
+        <div class="nav-item" onclick="switchTab('config')">⚙️ Médico</div>
+    </div>
+
+    <div id="tab-cadastro" class="tab-content active">
+        
+        <div class="section-title">1. Paciente</div>
+        <input type="text" id="tutor" placeholder="Nome do Tutor">
+        
+        <div style="display:flex; gap:10px">
+            <input type="text" id="animal" placeholder="Animal" style="flex:2">
+            <select id="sexo" style="flex:1">
+                <option value="Macho">Macho</option>
+                <option value="Fêmea">Fêmea</option>
+            </select>
+        </div>
+        
+        <div style="display:flex; gap:10px">
+            <select id="especie" style="flex:1" onchange="checkWeight()">
+                <option value="canino">🐶 Cão</option>
+                <option value="felino">🐱 Gato</option>
+            </select>
+            <input type="number" id="peso" placeholder="Peso (kg)" step="0.1" style="flex:1" oninput="checkWeight()">
+        </div>
+
+        <div id="weightAlert" class="weight-alert">
+            ⚠️ <strong>Peso > 20kg:</strong> Sugerimos preferência por medicação via Oral (Comprimidos) para facilitar o manejo.
+        </div>
+
+        <div class="section-title">2. Protocolos (Selecione)</div>
+        <div class="symptoms-list" id="listaSintomas">
+            </div>
+
+        <div class="section-title">3. Outro / Manual</div>
+        <div class="manual-entry-box">
+            <label style="margin-top:0; font-size:0.8rem">Patologia / Diagnóstico:</label>
+            <input type="text" id="manualPat" placeholder="Ex: Otite Bacteriana">
+            
+            <label style="font-size:0.8rem">Prescrição Completa (Medicamento + Dose + Freq):</label>
+            <textarea id="manualMed" rows="3" placeholder="Ex: Natalene - Aplicar 3 gotas em cada ouvido, a cada 12 horas, por 10 dias."></textarea>
+            <div class="manual-hint">Este texto será adicionado ao final da receita.</div>
+        </div>
+
+        <div id="canvasArea" style="display:none;">
+            <div class="section-title">4. Assinatura</div>
+            <div class="signature-wrapper"><span class="sig-label">Assine aqui...</span><canvas id="sigCanvas"></canvas></div>
+            <button class="btn" style="background:#e74c3c; padding:8px; font-size:0.8rem; margin-top:5px; width:auto; float:right;" onclick="limparCanvas()">Limpar</button>
+            <div style="clear:both"></div>
+        </div>
+        
+        <div id="stampStatus" style="display:none; margin-top:20px; background:#e8f8f5; color:#27ae60; padding:15px; border-radius:8px; text-align:center; border: 1px solid #c3e6cb;">
+            ✅ <strong>Carimbo Digital Ativo</strong>
+        </div>
+
+        <button class="btn btn-primary" onclick="calcular()">🚀 Calcular Prescrição</button>
+        
+        <div id="previewArea" class="preview-card">
+            <h3 style="margin-top:0; text-align:center; color:#2c3e50; border-bottom:1px solid #eee; padding-bottom:10px;">Resumo</h3>
+            <div id="previewList" class="preview-list"></div>
+            
+            <button class="btn btn-share" onclick="imprimir()">
+                📄 Gerar PDF & Compartilhar
+            </button>
+            <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#777;">
+                Use o menu "Compartilhar" do celular para enviar ao WhatsApp.
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-config" class="tab-content">
+        <div class="section-title">👨‍⚕️ Dados do Profissional</div>
+        <input type="text" id="vetNome" placeholder="Nome Completo">
+        <input type="text" id="vetCRMV" placeholder="CRMV / UF">
+        <input type="text" id="vetContato" placeholder="Telefone">
+
+        <div class="section-title">🖼️ Carimbo Digital</div>
+        <div class="stamp-area">
+            <p style="font-size:0.8rem; margin-bottom:10px">Imagem PNG Transparente (600x300px)</p>
+            <input type="file" id="stampInput" accept="image/*" onchange="salvarCarimbo()">
+            <img id="stampPreview" class="stamp-preview">
+            <br>
+            <button class="btn" style="background:#95a5a6; padding:10px; margin-top:10px; font-size:0.8rem;" onclick="removerCarimbo()">Remover</button>
+        </div>
+        <button class="btn btn-primary" onclick="salvarTexto()">💾 Salvar Configurações</button>
+    </div>
+</div>
+
+<div id="print-area">
+    <div class="p-header">
+        <div>
+            <div class="p-vet-name" id="pNome">Dr. Veterinário</div>
+            <div class="p-vet-crmv" id="pCRMV">CRMV: ---</div>
+        </div>
+        <div style="text-align:right; font-size:12px;">
+            <span id="pContato"></span><br>Data: <span id="pData"></span>
+        </div>
+    </div>
+
+    <div class="p-box">
+        <strong>Tutor:</strong> <span id="pTutor"></span> | 
+        <strong>Paciente:</strong> <span id="pAnimal"></span> (<span id="pEspecie"></span> / <span id="pSexo"></span>)<br>
+        <strong>Peso:</strong> <span id="pPeso"></span> kg
+    </div>
+
+    <div class="p-title">RECEITUÁRIO VETERINÁRIO</div>
+    <div id="pLista"></div>
+
+    <div class="p-footer">
+        <img id="pStampImg" class="p-stamp-img">
+        <div style="border-top:1px solid #000; width:200px; margin:40px auto 5px auto; display:none;" id="pLine"></div>
+        <div style="font-weight:bold" id="pNomeRodape">Dr. Veterinário</div>
+        <div class="p-timestamp" id="pTimestamp">Gerado em: --/--/---- às --:--</div>
+    </div>
+</div>
+
+<script>
+    /* BANCO DE DADOS (DB) */
+    const database = [
+        { cat: "Geral", id: 1, p: "Infecção Pele / Urinária", n: "Amoxicilina + Clavulanato", r: "Synulox", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10 dias" },
+        { cat: "Geral", id: 9, p: "Piodermite / Infecção", n: "Cefalexina", r: "Keflex", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14 dias" },
+        { cat: "Geral", id: 2, p: "Giardíase / Diarreia", n: "Metronidazol", r: "Giardicid", d: 15, c: 40, u: "ml", a: "Susp. 40mg/ml", f: "12/12h", t: "5 dias" },
+        { cat: "Geral", id: 5, p: "Hemoparasitose", n: "Doxiciclina", r: "Doxitec", d: 10, c: 80, u: "comp", a: "Comp 80mg", f: "24/24h", t: "28 dias" },
+        { cat: "Dor", id: 3, p: "Inflamação / Dor", n: "Meloxicam", r: "Maxicam", dog: 0.1, cat: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3 dias" },
+        { cat: "Dor", id: 7, p: "Febre / Dor Aguda", n: "Dipirona", r: "Novalgina", d: 25, c: 500, u: "ml", a: "Gotas 500mg/ml", f: "6/6h", t: "Se dor" },
+        { cat: "Gastro", id: 4, p: "Vômito / Enjoo", n: "Ondansetrona", r: "Vonau", d: 0.5, c: 2, u: "ml", a: "2mg/ml", f: "8/8h", t: "Se vômito" },
+        { cat: "Gastro", id: 8, p: "Proteção Gástrica", n: "Omeprazol", r: "Gaviz", d: 1, c: 10, u: "comp", a: "Cáps 10mg", f: "24/24h", t: "Jejum" },
+        { cat: "Outros", id: 14, p: "Verminose", n: "Ivermectina", r: "Ivercanis", d: 0.2, c: 3, u: "comp", a: "Comp 3mg", f: "Dose Única", t: "Repetir 15 dias" }
+    ];
+
+    /* INICIALIZAÇÃO */
+    const canvas = document.getElementById('sigCanvas');
+    const ctx = canvas.getContext('2d');
+    let cacheRx = [];
+
+    window.onload = () => {
+        carregarConfig();
+        gerarLista();
+        checarCarimbo();
+        setupCanvas();
+    };
+
+    /* FUNÇÕES VISUAIS (BUGS CORRIGIDOS) */
+    function checkWeight() {
+        const peso = parseFloat(document.getElementById('peso').value);
+        const especie = document.getElementById('especie').value;
+        const alertBox = document.getElementById('weightAlert');
+        
+        if(especie === 'canino' && peso > 20) {
+            alertBox.classList.add('visible');
+        } else {
+            alertBox.classList.remove('visible');
+        }
+    }
+
+    function toggleSelect(element) {
+        // Toggle visual da classe selected no pai do checkbox
+        if(element.checked) {
+            element.closest('.symptom-item').classList.add('selected');
+        } else {
+            element.closest('.symptom-item').classList.remove('selected');
+        }
+    }
+
+    /* RENDERIZAÇÃO DA LISTA */
+    function gerarLista() {
+        const div = document.getElementById('listaSintomas');
+        div.innerHTML = "";
+        
+        const grouped = database.reduce((acc, curr) => { (acc[curr.cat] = acc[curr.cat] || []).push(curr); return acc; }, {});
+
+        for (const [cat, items] of Object.entries(grouped)) {
+            div.innerHTML += `<div class="symptom-group-title">${cat}</div>`;
+            items.forEach(item => {
+                div.innerHTML += `
+                    <label class="symptom-item">
+                        <input type="checkbox" value="${item.id}" onchange="toggleSelect(this)">
+                        <div>
+                            <span class="pat-name">${item.p}</span>
+                            <span class="med-name">${item.n} (${item.r})</span>
+                        </div>
+                    </label>
+                `;
+            });
+        }
+    }
+
+    /* DOSE INTELIGENTE */
+    function formatDose(val, type, nome) {
+        if(type !== 'ml') {
+            const dec = val - Math.floor(val);
+            if(dec < 0.1 || dec > 0.9) return Math.round(val) + " comp";
+            if(val <= 0.25) return "1/4 comp";
+            if(val <= 0.6) return "1/2 comp";
+            if(val <= 0.85) return "3/4 comp";
+            return Math.ceil(val) + " comp";
+        }
+        let vol = val < 0.1 ? 0.1 : (val < 3 ? Math.round(val*10)/10 : (val <= 10 ? Math.round(val*5)/5 : (Math.round(val*2)/2).toFixed(1)));
+        if(typeof vol === 'number') vol = vol % 1 === 0 ? vol.toFixed(0) : vol.toFixed(1);
+        let txt = vol + " ml";
+        if(val < 3 && (nome.includes("Dipirona") || nome.includes("Ondansetrona"))) txt += ` (~${Math.round(val*20)} gts)`;
+        return txt;
+    }
+
+    /* CÁLCULO PRINCIPAL */
+    function calcular() {
+        const peso = parseFloat(document.getElementById('peso').value);
+        const esp = document.getElementById('especie').value;
+        const checks = document.querySelectorAll('#listaSintomas input:checked');
+        
+        // Manual Entry
+        const manPat = document.getElementById('manualPat').value;
+        const manMed = document.getElementById('manualMed').value;
+
+        if((!peso || checks.length === 0) && (!manPat || !manMed)) { 
+            alert("Preencha o Peso e selecione uma Patologia (ou preencha o campo Manual)."); return; 
+        }
+
+        cacheRx = [];
+        const prev = document.getElementById('previewList');
+        prev.innerHTML = "";
+
+        // 1. Processar Selecionados
+        checks.forEach(chk => {
+            const m = database.find(p => p.id == chk.value);
+            let doseBase = m.d;
+            if(m.n === 'Meloxicam') doseBase = (esp === 'canino') ? m.dog : m.cat;
+            
+            const qtd = (peso * doseBase) / m.c;
+            const doseFinal = formatDose(qtd, m.u, m.n);
+            
+            // Adiciona aviso de via oral se for cachorro grande
+            let via = "via oral";
+            if(esp === 'canino' && peso > 20) via = "VIA ORAL (Preferencial)";
+
+            cacheRx.push({ 
+                n: m.n, r: m.r, a: m.a, 
+                dose: doseFinal, freq: m.f, dur: m.t, via: via 
+            });
+
+            prev.innerHTML += `<div class="preview-item"><strong>${m.n}</strong>: ${doseFinal}<br><small>${m.f}</small></div>`;
+        });
+
+        // 2. Processar Manual (Merge)
+        if(manPat && manMed) {
+            cacheRx.push({
+                n: "Protocolo Manual", r: manPat, a: "Personalizado",
+                dose: manMed, freq: "Conforme descrito", dur: "-", via: "-"
+            });
+            prev.innerHTML += `<div class="preview-item"><strong>${manPat}</strong><br><small>Personalizado</small></div>`;
+        }
+
+        document.getElementById('previewArea').style.display = 'block';
+        document.getElementById('previewArea').scrollIntoView({behavior:'smooth'});
+    }
+
+    /* IMPRESSÃO PDF */
+    function imprimir() {
+        document.getElementById('pNome').innerText = localStorage.getItem('vetNome');
+        document.getElementById('pCRMV').innerText = localStorage.getItem('vetCRMV');
+        document.getElementById('pContato').innerText = localStorage.getItem('vetContato');
+        document.getElementById('pData').innerText = new Date().toLocaleDateString('pt-BR');
+        
+        document.getElementById('pTutor').innerText = document.getElementById('tutor').value;
+        document.getElementById('pAnimal').innerText = document.getElementById('animal').value;
+        document.getElementById('pEspecie').innerText = document.getElementById('especie').value;
+        document.getElementById('pSexo').innerText = document.getElementById('sexo').value;
+        document.getElementById('pPeso').innerText = document.getElementById('peso').value;
+        document.getElementById('pNomeRodape').innerText = localStorage.getItem('vetNome');
+        
+        // Timestamp (Melhoria Solicitada)
+        document.getElementById('pTimestamp').innerText = "Gerado eletronicamente em: " + new Date().toLocaleString('pt-BR');
+
+        const pl = document.getElementById('pLista');
+        pl.innerHTML = "";
+        
+        cacheRx.forEach((m, i) => {
+            // Se for manual, formatação muda levemente
+            if(m.a === "Personalizado") {
+                pl.innerHTML += `
+                <div class="p-item">
+                    <div class="p-med-name"><span>${i+1}. ${m.r}</span> <small>(Manual)</small></div>
+                    <div class="p-med-details" style="white-space: pre-wrap;">${m.dose}</div>
+                </div>`;
+            } else {
+                pl.innerHTML += `
+                <div class="p-item">
+                    <div class="p-med-name"><span>${i+1}. ${m.n} <small>(${m.a})</small></span> <span style="font-weight:normal; font-size:12px">Ref: ${m.r}</span></div>
+                    <div class="p-med-details">
+                        <strong>Administrar:</strong> ${m.dose} ${m.via}.<br>
+                        <strong>Posologia:</strong> ${m.freq} durante ${m.dur}.
+                    </div>
+                </div>`;
+            }
+        });
+
+        // Assinatura
+        const stamp = localStorage.getItem('vetStampImg');
+        const img = document.getElementById('pStampImg');
+        const line = document.getElementById('pLine');
+        if(stamp) { img.src = stamp; img.style.display='block'; line.style.display='none'; }
+        else { img.src = canvas.toDataURL(); img.style.display='block'; line.style.display='none'; }
+
+        window.print();
+    }
+
+    /* CONFIG & CANVAS (Minificado) */
+    function switchTab(t){ document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active'); if(t==='cadastro'){checarCarimbo();setTimeout(resizeCanvas,200);} }
+    function salvarTexto(){ localStorage.setItem('vetNome',document.getElementById('vetNome').value); localStorage.setItem('vetCRMV',document.getElementById('vetCRMV').value); localStorage.setItem('vetContato',document.getElementById('vetContato').value); alert("Salvo!"); }
+    function salvarCarimbo(){ const f=document.getElementById('stampInput').files[0]; if(!f)return; const r=new FileReader(); r.onloadend=()=>{localStorage.setItem('vetStampImg',r.result); checarCarimbo(); alert("Carimbo Salvo!");}; r.readAsDataURL(f); }
+    function removerCarimbo(){ localStorage.removeItem('vetStampImg'); checarCarimbo(); }
+    function carregarConfig(){ document.getElementById('vetNome').value=localStorage.getItem('vetNome')||""; document.getElementById('vetCRMV').value=localStorage.getItem('vetCRMV')||""; document.getElementById('vetContato').value=localStorage.getItem('vetContato')||""; }
+    function checarCarimbo(){ if(localStorage.getItem('vetStampImg')){ document.getElementById('canvasArea').style.display='none'; document.getElementById('stampStatus').style.display='block'; }else{ document.getElementById('canvasArea').style.display='block'; document.getElementById('stampStatus').style.display='none'; } }
+    let drawing=false;
+    function setupCanvas(){ ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e,ds)); ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e,de)); ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e,dd)); }
+    function resizeCanvas(){ const p=canvas.parentElement; canvas.width=p.clientWidth; canvas.height=p.clientHeight; ctx.lineWidth=2; ctx.strokeStyle="#000080"; }
+    function ds(e){ drawing=true; ctx.beginPath(); dd(e); }
+    function de(){ drawing=false; ctx.beginPath(); }
+    function dd(e){ if(!drawing)return; e.preventDefault(); const r=canvas.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; ctx.lineTo(x,y); ctx.stroke(); }
+    function limparCanvas(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+</script>
+</body>
+</html>
