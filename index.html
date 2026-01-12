@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VetManager Pro v11.0</title>
+    <title>VetManager Pro v12.0</title>
     <style>
         /* --- CORE CSS --- */
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f4f7f6; --card: #ffffff; --border: #e1e4e8; }
@@ -25,14 +25,12 @@
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: 0.2s; font-family: inherit; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); }
 
-        /* LISTA DE SINTOMAS (CHECKBOX FIX) */
+        /* LISTA DE SINTOMAS */
         .symptoms-list { max-height: 350px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
         .symptom-group-title { background: #f1f2f6; padding: 8px 15px; font-size: 0.75rem; font-weight: bold; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
         
         .symptom-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent; }
         .symptom-item:last-child { border-bottom: none; }
-        
-        /* O "PULO DO GATO" VISUAL PARA O CHECKBOX */
         .symptom-item.selected { background-color: #e8f8f5; border-left-color: var(--primary); }
         .symptom-item.selected .pat-name { color: var(--primary); }
         
@@ -68,14 +66,13 @@
         canvas { width: 100%; height: 100%; cursor: crosshair; }
         .sig-label { position: absolute; top: 5px; left: 10px; color: #ccc; font-size: 0.7rem; pointer-events: none; }
 
-        /* --- PRINT MODE (CORREÇÃO DE CORTE) --- */
+        /* --- PRINT MODE --- */
         #print-area { display: none; }
-        
-        @page { size: A4; margin: 1.5cm; } /* Margem segura para não cortar */
+        @page { size: A4; margin: 1.5cm; }
         
         @media print {
             body { background: white; margin: 0; padding: 0; }
-            .container { display: none; } /* Esconde o App */
+            .container { display: none; }
             
             #print-area { display: block; width: 100%; font-family: 'Times New Roman', serif; color: #000; }
             
@@ -98,7 +95,7 @@
 <body>
 
 <div class="container">
-    <div class="app-header"><h2>🏥 VetManager <small style="font-size:0.7em; opacity:0.8">v11.0</small></h2></div>
+    <div class="app-header"><h2>🏥 VetManager <small style="font-size:0.7em; opacity:0.8">v12.0</small></h2></div>
 
     <div class="nav-tabs">
         <div class="nav-item active" onclick="switchTab('cadastro')">📝 Prescrição</div>
@@ -127,7 +124,7 @@
         </div>
 
         <div id="weightAlert" class="weight-alert">
-            ⚠️ <strong>Peso > 20kg:</strong> Sugerimos preferência por medicação via Oral (Comprimidos) para facilitar o manejo.
+            ⚠️ <strong>Peso > 20kg:</strong> Sugerimos preferência por medicação via Oral.
         </div>
 
         <div class="section-title">2. Protocolos (Selecione)</div>
@@ -136,12 +133,10 @@
 
         <div class="section-title">3. Outro / Manual</div>
         <div class="manual-entry-box">
-            <label style="margin-top:0; font-size:0.8rem">Patologia / Diagnóstico:</label>
+            <label style="margin-top:0; font-size:0.8rem">Diagnóstico:</label>
             <input type="text" id="manualPat" placeholder="Ex: Otite Bacteriana">
-            
-            <label style="font-size:0.8rem">Prescrição Completa (Medicamento + Dose + Freq):</label>
-            <textarea id="manualMed" rows="3" placeholder="Ex: Natalene - Aplicar 3 gotas em cada ouvido, a cada 12 horas, por 10 dias."></textarea>
-            <div class="manual-hint">Este texto será adicionado ao final da receita.</div>
+            <label style="font-size:0.8rem">Prescrição Completa:</label>
+            <textarea id="manualMed" rows="3" placeholder="Ex: Natalene - 3 gotas a cada 12h..."></textarea>
         </div>
 
         <div id="canvasArea" style="display:none;">
@@ -165,7 +160,7 @@
                 📄 Gerar PDF & Compartilhar
             </button>
             <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#777;">
-                Use o menu "Compartilhar" do celular para enviar ao WhatsApp.
+                O arquivo será salvo com Nome + Data + Hora automaticamente.
             </div>
         </div>
     </div>
@@ -212,12 +207,12 @@
         <img id="pStampImg" class="p-stamp-img">
         <div style="border-top:1px solid #000; width:200px; margin:40px auto 5px auto; display:none;" id="pLine"></div>
         <div style="font-weight:bold" id="pNomeRodape">Dr. Veterinário</div>
-        <div class="p-timestamp" id="pTimestamp">Gerado em: --/--/---- às --:--</div>
+        <div class="p-timestamp" id="pTimestamp">Gerado em: --/--/----</div>
     </div>
 </div>
 
 <script>
-    /* BANCO DE DADOS (DB) */
+    /* BANCO DE DADOS */
     const database = [
         { cat: "Geral", id: 1, p: "Infecção Pele / Urinária", n: "Amoxicilina + Clavulanato", r: "Synulox", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10 dias" },
         { cat: "Geral", id: 9, p: "Piodermite / Infecção", n: "Cefalexina", r: "Keflex", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14 dias" },
@@ -234,6 +229,7 @@
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
     let cacheRx = [];
+    let originalTitle = document.title;
 
     window.onload = () => {
         carregarConfig();
@@ -242,52 +238,38 @@
         setupCanvas();
     };
 
-    /* FUNÇÕES VISUAIS (BUGS CORRIGIDOS) */
+    /* VISUAL & FORM */
     function checkWeight() {
         const peso = parseFloat(document.getElementById('peso').value);
         const especie = document.getElementById('especie').value;
         const alertBox = document.getElementById('weightAlert');
-        
-        if(especie === 'canino' && peso > 20) {
-            alertBox.classList.add('visible');
-        } else {
-            alertBox.classList.remove('visible');
-        }
+        if(especie === 'canino' && peso > 20) alertBox.classList.add('visible');
+        else alertBox.classList.remove('visible');
     }
 
     function toggleSelect(element) {
-        // Toggle visual da classe selected no pai do checkbox
-        if(element.checked) {
-            element.closest('.symptom-item').classList.add('selected');
-        } else {
-            element.closest('.symptom-item').classList.remove('selected');
-        }
+        if(element.checked) element.closest('.symptom-item').classList.add('selected');
+        else element.closest('.symptom-item').classList.remove('selected');
     }
 
-    /* RENDERIZAÇÃO DA LISTA */
     function gerarLista() {
         const div = document.getElementById('listaSintomas');
         div.innerHTML = "";
-        
         const grouped = database.reduce((acc, curr) => { (acc[curr.cat] = acc[curr.cat] || []).push(curr); return acc; }, {});
-
         for (const [cat, items] of Object.entries(grouped)) {
             div.innerHTML += `<div class="symptom-group-title">${cat}</div>`;
             items.forEach(item => {
                 div.innerHTML += `
                     <label class="symptom-item">
                         <input type="checkbox" value="${item.id}" onchange="toggleSelect(this)">
-                        <div>
-                            <span class="pat-name">${item.p}</span>
-                            <span class="med-name">${item.n} (${item.r})</span>
-                        </div>
+                        <div><span class="pat-name">${item.p}</span><span class="med-name">${item.n} (${item.r})</span></div>
                     </label>
                 `;
             });
         }
     }
 
-    /* DOSE INTELIGENTE */
+    /* CALCULO */
     function formatDose(val, type, nome) {
         if(type !== 'ml') {
             const dec = val - Math.floor(val);
@@ -304,25 +286,21 @@
         return txt;
     }
 
-    /* CÁLCULO PRINCIPAL */
     function calcular() {
         const peso = parseFloat(document.getElementById('peso').value);
         const esp = document.getElementById('especie').value;
         const checks = document.querySelectorAll('#listaSintomas input:checked');
-        
-        // Manual Entry
         const manPat = document.getElementById('manualPat').value;
         const manMed = document.getElementById('manualMed').value;
 
         if((!peso || checks.length === 0) && (!manPat || !manMed)) { 
-            alert("Preencha o Peso e selecione uma Patologia (ou preencha o campo Manual)."); return; 
+            alert("Preencha o Peso e selecione uma Patologia."); return; 
         }
 
         cacheRx = [];
         const prev = document.getElementById('previewList');
         prev.innerHTML = "";
 
-        // 1. Processar Selecionados
         checks.forEach(chk => {
             const m = database.find(p => p.id == chk.value);
             let doseBase = m.d;
@@ -330,25 +308,14 @@
             
             const qtd = (peso * doseBase) / m.c;
             const doseFinal = formatDose(qtd, m.u, m.n);
-            
-            // Adiciona aviso de via oral se for cachorro grande
-            let via = "via oral";
-            if(esp === 'canino' && peso > 20) via = "VIA ORAL (Preferencial)";
+            let via = (esp === 'canino' && peso > 20) ? "VIA ORAL (Preferencial)" : "via oral";
 
-            cacheRx.push({ 
-                n: m.n, r: m.r, a: m.a, 
-                dose: doseFinal, freq: m.f, dur: m.t, via: via 
-            });
-
+            cacheRx.push({ n: m.n, r: m.r, a: m.a, dose: doseFinal, freq: m.f, dur: m.t, via: via });
             prev.innerHTML += `<div class="preview-item"><strong>${m.n}</strong>: ${doseFinal}<br><small>${m.f}</small></div>`;
         });
 
-        // 2. Processar Manual (Merge)
         if(manPat && manMed) {
-            cacheRx.push({
-                n: "Protocolo Manual", r: manPat, a: "Personalizado",
-                dose: manMed, freq: "Conforme descrito", dur: "-", via: "-"
-            });
+            cacheRx.push({ n: "Protocolo Manual", r: manPat, a: "Personalizado", dose: manMed, freq: "Conforme descrito", dur: "-", via: "-" });
             prev.innerHTML += `<div class="preview-item"><strong>${manPat}</strong><br><small>Personalizado</small></div>`;
         }
 
@@ -356,12 +323,15 @@
         document.getElementById('previewArea').scrollIntoView({behavior:'smooth'});
     }
 
-    /* IMPRESSÃO PDF */
+    /* IMPRESSÃO COM NOME DO ARQUIVO CUSTOMIZADO */
     function imprimir() {
+        const now = new Date();
+        
+        // Dados para o PDF
         document.getElementById('pNome').innerText = localStorage.getItem('vetNome');
         document.getElementById('pCRMV').innerText = localStorage.getItem('vetCRMV');
         document.getElementById('pContato').innerText = localStorage.getItem('vetContato');
-        document.getElementById('pData').innerText = new Date().toLocaleDateString('pt-BR');
+        document.getElementById('pData').innerText = now.toLocaleDateString('pt-BR');
         
         document.getElementById('pTutor').innerText = document.getElementById('tutor').value;
         document.getElementById('pAnimal').innerText = document.getElementById('animal').value;
@@ -369,30 +339,16 @@
         document.getElementById('pSexo').innerText = document.getElementById('sexo').value;
         document.getElementById('pPeso').innerText = document.getElementById('peso').value;
         document.getElementById('pNomeRodape').innerText = localStorage.getItem('vetNome');
-        
-        // Timestamp (Melhoria Solicitada)
-        document.getElementById('pTimestamp').innerText = "Gerado eletronicamente em: " + new Date().toLocaleString('pt-BR');
+        document.getElementById('pTimestamp').innerText = `Gerado eletronicamente em: ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}`;
 
+        // Lista
         const pl = document.getElementById('pLista');
         pl.innerHTML = "";
-        
         cacheRx.forEach((m, i) => {
-            // Se for manual, formatação muda levemente
             if(m.a === "Personalizado") {
-                pl.innerHTML += `
-                <div class="p-item">
-                    <div class="p-med-name"><span>${i+1}. ${m.r}</span> <small>(Manual)</small></div>
-                    <div class="p-med-details" style="white-space: pre-wrap;">${m.dose}</div>
-                </div>`;
+                pl.innerHTML += `<div class="p-item"><div class="p-med-name"><span>${i+1}. ${m.r}</span> <small>(Manual)</small></div><div class="p-med-details" style="white-space: pre-wrap;">${m.dose}</div></div>`;
             } else {
-                pl.innerHTML += `
-                <div class="p-item">
-                    <div class="p-med-name"><span>${i+1}. ${m.n} <small>(${m.a})</small></span> <span style="font-weight:normal; font-size:12px">Ref: ${m.r}</span></div>
-                    <div class="p-med-details">
-                        <strong>Administrar:</strong> ${m.dose} ${m.via}.<br>
-                        <strong>Posologia:</strong> ${m.freq} durante ${m.dur}.
-                    </div>
-                </div>`;
+                pl.innerHTML += `<div class="p-item"><div class="p-med-name"><span>${i+1}. ${m.n} <small>(${m.a})</small></span> <span style="font-weight:normal; font-size:12px">Ref: ${m.r}</span></div><div class="p-med-details"><strong>Administrar:</strong> ${m.dose} ${m.via}.<br><strong>Posologia:</strong> ${m.freq} durante ${m.dur}.</div></div>`;
             }
         });
 
@@ -403,10 +359,28 @@
         if(stamp) { img.src = stamp; img.style.display='block'; line.style.display='none'; }
         else { img.src = canvas.toDataURL(); img.style.display='block'; line.style.display='none'; }
 
+        /* --- LÓGICA DE NOME DO ARQUIVO --- */
+        const pad = (n) => n.toString().padStart(2, '0');
+        const yyyy = now.getFullYear();
+        const mm = pad(now.getMonth() + 1);
+        const dd = pad(now.getDate());
+        const hh = pad(now.getHours());
+        const min = pad(now.getMinutes());
+        
+        const nomeAnimal = (document.getElementById('animal').value || 'SemNome').replace(/[^a-z0-9]/gi, '');
+        const tipo = document.getElementById('especie').value === 'canino' ? 'Cao' : 'Gato';
+        const sexo = document.getElementById('sexo').value;
+
+        // Formato: AAAA-MM-DD_HH-MM_Receita_(Tipo-Sexo-Nome)
+        document.title = `${yyyy}-${mm}-${dd}_${hh}-${min}_Receita_(${tipo}-${sexo}-${nomeAnimal})`;
+
         window.print();
+
+        // Volta ao título original
+        setTimeout(() => { document.title = originalTitle; }, 1000);
     }
 
-    /* CONFIG & CANVAS (Minificado) */
+    /* CONFIG & CANVAS */
     function switchTab(t){ document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active'); if(t==='cadastro'){checarCarimbo();setTimeout(resizeCanvas,200);} }
     function salvarTexto(){ localStorage.setItem('vetNome',document.getElementById('vetNome').value); localStorage.setItem('vetCRMV',document.getElementById('vetCRMV').value); localStorage.setItem('vetContato',document.getElementById('vetContato').value); alert("Salvo!"); }
     function salvarCarimbo(){ const f=document.getElementById('stampInput').files[0]; if(!f)return; const r=new FileReader(); r.onloadend=()=>{localStorage.setItem('vetStampImg',r.result); checarCarimbo(); alert("Carimbo Salvo!");}; r.readAsDataURL(f); }
