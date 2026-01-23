@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VetManager v16.0 Platinum</title>
+    <title>VetManager v16.1 (Fix)</title>
     <style>
         /* --- CORE CSS --- */
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f8f9fa; --card: #ffffff; --border: #dee2e6; --text: #343a40; }
@@ -57,8 +57,10 @@
 
         /* CONFIGURAÇÃO */
         .stamp-area { border: 2px dashed #ced4da; padding: 20px; text-align: center; border-radius: 8px; background: #f8f9fa; margin-top: 5px; }
-        .signature-wrapper { border: 2px dashed #ced4da; height: 120px; background: #fff; border-radius: 8px; position: relative; margin-top: 5px; }
-        canvas { width: 100%; height: 100%; }
+        
+        /* CANVAS FIX */
+        .signature-wrapper { border: 2px dashed #ced4da; height: 140px; background: #fff; border-radius: 8px; position: relative; margin-top: 5px; touch-action: none; }
+        canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
         .sig-text { position: absolute; top: 10px; left: 10px; color: #ccc; font-size: 0.75rem; pointer-events: none; }
 
         /* --- PRINT MODE --- */
@@ -101,7 +103,7 @@
 
 <div class="container">
     <div class="app-header">
-        <h2>🏥 VetManager <small style="font-size:0.7em">v16.0</small></h2>
+        <h2>🏥 VetManager <small style="font-size:0.7em">v16.1</small></h2>
         <button class="btn-reset" onclick="resetAll()">Limpar</button>
     </div>
 
@@ -141,10 +143,10 @@
         <div id="canvasArea" style="display:none; margin-top:20px;">
             <div class="section-label">4. Assinatura</div>
             <div class="signature-wrapper">
-                <span class="sig-text">Assine aqui...</span>
+                <span class="sig-text">Assine com o dedo...</span>
                 <canvas id="sigCanvas"></canvas>
             </div>
-            <button class="btn-mini" style="float:right; margin-top:5px;" onclick="limparCanvas()">Limpar</button>
+            <button class="btn-mini" style="float:right; margin-top:5px;" onclick="limparCanvas()">Limpar Assinatura</button>
             <div style="clear:both"></div>
         </div>
 
@@ -297,9 +299,8 @@
 
         checks.forEach(chk => {
             const m = database.find(p => p.id == chk.value);
-            let doseFinal = m.a; // Default para dose unica/fixa
+            let doseFinal = m.a; 
             
-            // Calculo se não for dose fixa
             if(!m.brand.includes("Simparic") && !m.brand.includes("Drontal") && !m.brand.includes("Probiótico") && !m.brand.includes("Stomorgyl")) {
                 let doseBase = m.d;
                 if(m.brand.includes('Maxicam')) doseBase = (esp === 'canino') ? m.dog : m.cat;
@@ -317,7 +318,6 @@
             prev.innerHTML += `<div class="preview-item"><strong>${manPat}</strong> (Manual)</div>`;
         }
 
-        // Set Title for Filename
         const now = new Date();
         const animal = (document.getElementById('animal').value || 'SemNome').replace(/[^a-z0-9]/gi, '');
         document.title = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}_Receita_${animal}`;
@@ -328,17 +328,13 @@
 
     function imprimir() {
         const now = new Date();
-        // HEADER
         document.getElementById('pDataHora').innerText = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
-        
-        // PACIENTE
         document.getElementById('pTutor').innerText = document.getElementById('tutor').value;
         document.getElementById('pAnimal').innerText = document.getElementById('animal').value;
         document.getElementById('pEspecie').innerText = document.getElementById('especie').value;
         document.getElementById('pSexo').innerText = document.getElementById('sexo').value;
         document.getElementById('pPeso').innerText = document.getElementById('peso').value;
 
-        // LISTA
         const pl = document.getElementById('pLista');
         pl.innerHTML = "";
         cacheRx.forEach((m, i) => {
@@ -357,7 +353,6 @@
             }
         });
 
-        // BLOCO ASSINATURA (CARIMBO)
         const vNome = localStorage.getItem('vetNome');
         const vCRMV = localStorage.getItem('vetCRMV');
         document.getElementById('pVetName').innerText = vNome;
@@ -369,7 +364,6 @@
         if(stamp) { img.src = stamp; img.style.display='block'; line.style.display='none'; }
         else { img.src = canvas.toDataURL(); img.style.display='block'; line.style.display='block'; }
 
-        // RODAPÉ COMPLETO
         const vEmail = localStorage.getItem('vetEmail') || "";
         const vTel = localStorage.getItem('vetContato') || "";
         document.getElementById('pFooterInfo').innerText = `${vNome} | ${vCRMV} | ${vEmail} | ${vTel}`;
@@ -377,14 +371,22 @@
         window.print();
     }
 
-    /* CONFIG & UTILS */
+    /* CONFIG & CANVAS FIX */
     function checkWeight() {
         const p = parseFloat(document.getElementById('peso').value);
         const e = document.getElementById('especie').value;
         document.getElementById('weightAlert').style.display = (e === 'canino' && p > 20) ? 'block' : 'none';
     }
     function resetAll() { if(confirm("Limpar tudo?")) location.reload(); }
-    function switchTab(t){ document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active'); if(t==='cadastro'){checarCarimbo();setTimeout(resizeCanvas,200);} }
+    
+    function switchTab(t){ 
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
+        document.getElementById('tab-'+t).classList.add('active'); 
+        document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active'); 
+        if(t==='cadastro'){ checarCarimbo(); setTimeout(resizeCanvas, 200); } 
+    }
+    
     function salvarTexto(){ 
         localStorage.setItem('vetNome',document.getElementById('vetNome').value); 
         localStorage.setItem('vetCRMV',document.getElementById('vetCRMV').value); 
@@ -399,16 +401,54 @@
         document.getElementById('vetContato').value=localStorage.getItem('vetContato')||""; 
     }
     function salvarCarimbo(){ const f=document.getElementById('stampInput').files[0]; if(!f)return; const r=new FileReader(); r.onloadend=()=>{localStorage.setItem('vetStampImg',r.result); checarCarimbo(); alert("Ok!");}; r.readAsDataURL(f); }
-    function removerCarimbo(){ localStorage.removeItem('vetStampImg'); checarCarimbo(); }
-    function checarCarimbo(){ if(localStorage.getItem('vetStampImg')){ document.getElementById('canvasArea').style.display='none'; document.getElementById('stampStatus').style.display='block'; }else{ document.getElementById('canvasArea').style.display='block'; document.getElementById('stampStatus').style.display='none'; } }
+    function removerCarimbo(){ localStorage.removeItem('vetStampImg'); checarCarimbo(); setTimeout(resizeCanvas, 200); }
     
-    // Canvas Logic
-    function setupCanvas(){ ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e,ds)); ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e,de)); ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e,dd)); }
-    function resizeCanvas(){ const p=canvas.parentElement; canvas.width=p.clientWidth; canvas.height=p.clientHeight; ctx.lineWidth=2; ctx.strokeStyle="#000080"; }
-    function ds(e){ drawing=true; ctx.beginPath(); dd(e); }
-    function de(){ drawing=false; ctx.beginPath(); }
-    function dd(e){ if(!drawing)return; e.preventDefault(); const r=canvas.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; ctx.lineTo(x,y); ctx.stroke(); }
-    function limparCanvas(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+    function checarCarimbo(){ 
+        if(localStorage.getItem('vetStampImg')){ 
+            document.getElementById('canvasArea').style.display='none'; 
+            document.getElementById('stampStatus').style.display='block'; 
+        } else { 
+            document.getElementById('canvasArea').style.display='block'; 
+            document.getElementById('stampStatus').style.display='none'; 
+        } 
+    }
+    
+    /* CANVAS LOGIC CORRIGIDA */
+    function setupCanvas(){
+        ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e, startDraw));
+        ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e, endDraw));
+        ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e, draw));
+    }
+    function resizeCanvas(){
+        const p=canvas.parentElement;
+        if(p.clientWidth) {
+            canvas.width = p.clientWidth;
+            canvas.height = p.clientHeight;
+            ctx.lineWidth=2;
+            ctx.strokeStyle="#000080";
+        }
+    }
+    function startDraw(e){ 
+        drawing=true; 
+        ctx.beginPath(); 
+        draw(e); 
+    }
+    function endDraw(){ 
+        drawing=false; 
+        ctx.beginPath(); 
+    }
+    function draw(e){ 
+        if(!drawing) return; 
+        e.preventDefault(); 
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        ctx.lineTo(clientX - rect.left, clientY - rect.top);
+        ctx.stroke(); 
+    }
+    function limparCanvas(){ 
+        ctx.clearRect(0,0,canvas.width,canvas.height); 
+    }
 </script>
 </body>
 </html>
