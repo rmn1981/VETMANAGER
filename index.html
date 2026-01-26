@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VetManager v18.0</title>
+    <title>VetManager v19.0</title>
     <style>
         /* --- CORE CSS --- */
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f8f9fa; --card: #ffffff; --border: #e9ecef; --text: #343a40; }
@@ -31,7 +31,7 @@
         .col { flex: 1; }
 
         /* LISTA CLÍNICA */
-        .symptoms-list { height: 400px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; }
+        .symptoms-list { height: 350px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; }
         .cat-header { background: #e9ecef; color: #6c757d; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 8px 15px; position: sticky; top: 0; border-bottom: 1px solid var(--border); }
         .symptom-item { display: flex; align-items: flex-start; padding: 12px 15px; border-bottom: 1px solid #f1f3f5; cursor: pointer; }
         .symptom-item.selected { background-color: #e8f5e9; }
@@ -101,7 +101,7 @@
 
 <div class="container">
     <div class="app-header">
-        <h2>🏥 VetManager <small style="font-size:0.7em">v18.0</small></h2>
+        <h2>🏥 VetManager <small style="font-size:0.7em">v19.0</small></h2>
         <button class="btn-reset" onclick="resetAll()">Limpar</button>
     </div>
 
@@ -123,6 +123,12 @@
                 <option value="Fêmea">Fêmea</option>
             </select>
         </div>
+        
+        <div class="row">
+            <input type="text" id="raca" placeholder="Raça (Ex: Poodle)" class="col">
+            <input type="text" id="idade" placeholder="Idade (Ex: 5 anos)" class="col">
+        </div>
+
         <div class="row">
             <select id="especie" class="col" onchange="checkWeight()">
                 <option value="canino">🐶 Cão</option>
@@ -197,7 +203,7 @@
     </div>
     <div class="p-box">
         <strong>Tutor:</strong> <span id="pTutor"></span> | <strong>Paciente:</strong> <span id="pAnimal"></span> (<span id="pEspecie"></span> / <span id="pSexo"></span>)<br>
-        <strong>Peso:</strong> <span id="pPeso"></span> kg
+        <strong>Raça:</strong> <span id="pRaca"></span> | <strong>Idade:</strong> <span id="pIdade"></span> | <strong>Peso:</strong> <span id="pPeso"></span> kg
     </div>
     <div class="p-list-title">Prescrição Terapêutica</div>
     <div id="pLista"></div>
@@ -216,7 +222,7 @@
 </div>
 
 <script>
-    /* BANCO DE DADOS (CORRIGIDO: 'cat' = Categoria, 'fel' = Dose Gato) */
+    /* BANCO DE DADOS */
     const database = [
         { cat: "ANTIMICROBIANOS", id: 1, p: "Infecção Pele", brand: "Rilexine / Keflex", salt: "Cefalexina", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14-21 dias" },
         { cat: "ANTIMICROBIANOS", id: 2, p: "Infecção Urinária", brand: "Synulox", salt: "Amox.+Clavulanato", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10-14 dias" },
@@ -388,6 +394,10 @@
         document.getElementById('pAnimal').innerText = document.getElementById('animal').value;
         document.getElementById('pEspecie').innerText = document.getElementById('especie').value;
         document.getElementById('pSexo').innerText = document.getElementById('sexo').value;
+        
+        // NOVOS CAMPOS NO PDF
+        document.getElementById('pRaca').innerText = document.getElementById('raca').value || 'Não inf.';
+        document.getElementById('pIdade').innerText = document.getElementById('idade').value || 'Não inf.';
         document.getElementById('pPeso').innerText = document.getElementById('peso').value;
 
         const pl = document.getElementById('pLista');
@@ -419,7 +429,17 @@
         const e = document.getElementById('especie').value;
         document.getElementById('weightAlert').style.display = (e === 'canino' && p > 20) ? 'block' : 'none';
     }
-    function resetAll() { if(confirm("Limpar tudo?")) location.reload(); }
+    function resetAll() { 
+        if(confirm("Limpar tudo?")) {
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            document.querySelectorAll('textarea').forEach(i => i.value = '');
+            document.querySelectorAll('input[type=checkbox]').forEach(el => {
+                el.checked = false;
+                el.closest('.symptom-item').classList.remove('selected');
+            });
+            document.getElementById('previewArea').style.display = 'none';
+        }
+    }
     
     function switchTab(t){ 
         document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
