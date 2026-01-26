@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VetManager v16.1 (Fix)</title>
+    <title>VetManager v18.0</title>
     <style>
         /* --- CORE CSS --- */
-        :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f8f9fa; --card: #ffffff; --border: #dee2e6; --text: #343a40; }
+        :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f8f9fa; --card: #ffffff; --border: #e9ecef; --text: #343a40; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: var(--text); -webkit-font-smoothing: antialiased; }
         .container { max-width: 600px; margin: 0 auto; background: var(--card); min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.03); }
 
@@ -23,7 +23,7 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* FORM */
+        /* UI ELEMENTS */
         .section-label { color: #2980b9; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-top: 20px; margin-bottom: 8px; letter-spacing: 0.5px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: #fff; font-family: inherit; }
         input:focus, select:focus { border-color: var(--primary); outline: none; }
@@ -41,29 +41,30 @@
         .med-name { font-size: 0.8rem; color: var(--primary); font-weight: 700; }
         .med-detail { font-size: 0.75rem; color: #888; }
 
-        /* ALERTS & EXTRAS */
-        .alert { padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-top: 10px; display: none; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .manual-box { background: #fff; border: 1px dashed #ced4da; padding: 15px; border-radius: 8px; margin-top: 5px; }
+        /* ASSINATURA & CONFIG */
+        .sig-status-box { padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; border-radius: 8px; text-align: center; font-size: 0.9rem; margin-top: 10px; display: none; }
+        .sig-status-box.missing { background: #f8d7da; border-color: #f5c6cb; color: #721c24; display: block; }
+        
+        .sig-manager { border: 2px dashed #ced4da; padding: 15px; border-radius: 8px; background: #fff; margin-top: 5px; }
+        .canvas-wrapper { border: 1px solid #ccc; height: 150px; background: #fff; margin-top: 10px; touch-action: none; position: relative; }
+        canvas { width: 100%; height: 100%; display: block; }
         
         /* BOTOES */
         .btn { width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; gap: 8px; text-transform: uppercase; }
         .btn-calc { background: var(--primary); color: white; }
         .btn-print { background: #3498db; color: white; margin-top: 15px; }
+        .btn-save { background: var(--dark); color: white; margin-top: 10px; }
         .btn-mini { padding: 5px 10px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; background: #e74c3c; color: white; }
+        .btn-tab-sig { flex: 1; padding: 8px; background: #e9ecef; border: none; cursor: pointer; font-weight: 600; color: #666; }
+        .btn-tab-sig.active { background: #2c3e50; color: white; }
 
         /* PREVIEW */
         .preview-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 25px; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .preview-item { border-bottom: 1px dashed #eee; padding: 10px 0; font-size: 0.9rem; }
-
-        /* CONFIGURAÇÃO */
-        .stamp-area { border: 2px dashed #ced4da; padding: 20px; text-align: center; border-radius: 8px; background: #f8f9fa; margin-top: 5px; }
         
-        /* CANVAS FIX */
-        .signature-wrapper { border: 2px dashed #ced4da; height: 140px; background: #fff; border-radius: 8px; position: relative; margin-top: 5px; touch-action: none; }
-        canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
-        .sig-text { position: absolute; top: 10px; left: 10px; color: #ccc; font-size: 0.75rem; pointer-events: none; }
+        .weight-alert { display: none; margin-top: 10px; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #ffeeba; }
 
-        /* --- PRINT MODE --- */
+        /* --- PDF PRINT STYLE --- */
         #print-area { display: none; }
         @page { size: A4; margin: 1.5cm; }
         
@@ -72,30 +73,27 @@
             .container { display: none; }
             #print-area { display: block; width: 100%; font-family: 'Times New Roman', serif; color: #000; }
             
-            /* CABEÇALHO */
             .p-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
             .p-title { font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase; }
             .p-meta { text-align: right; font-size: 12px; }
             
-            /* INFO PACIENTE */
             .p-box { border: 1px solid #000; padding: 10px; margin-bottom: 25px; font-size: 14px; border-radius: 4px; }
             
-            /* LISTA MEDICAMENTOS */
             .p-list-title { text-align: center; font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 20px; text-transform: uppercase; }
             .p-item { margin-bottom: 20px; page-break-inside: avoid; }
             .p-med-header { font-weight: bold; font-size: 15px; }
             .p-med-sub { font-size: 12px; font-style: italic; }
             .p-med-body { margin-left: 20px; font-size: 14px; margin-top: 4px; line-height: 1.4; }
             
-            /* ASSINATURA (CARIMBO SIMULADO) */
             .p-sig-block { margin-top: 50px; text-align: center; page-break-inside: avoid; width: 300px; margin-left: auto; margin-right: auto; }
-            .p-sig-img { width: 180px; display: block; margin: 0 auto 2px auto; }
+            .p-sig-img { width: 180px; display: block; margin: 0 auto 5px auto; }
             .p-sig-line { border-top: 1px solid #000; width: 220px; margin: 0 auto 5px auto; }
             .p-vet-name { font-weight: bold; font-size: 14px; text-transform: uppercase; }
             .p-vet-crmv { font-size: 12px; }
 
-            /* RODAPÉ FINAL */
-            .p-footer-bar { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: #555; border-top: 1px solid #ccc; padding-top: 5px; background: white; }
+            .p-footer-bar { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; background: white; padding-top: 10px; }
+            .p-footer-contact { font-size: 11px; color: #333; margin-bottom: 5px; font-weight: bold; }
+            .p-footer-legal { font-size: 9px; color: #666; border-top: 1px solid #ccc; padding-top: 5px; font-style: italic; }
         }
     </style>
 </head>
@@ -103,16 +101,19 @@
 
 <div class="container">
     <div class="app-header">
-        <h2>🏥 VetManager <small style="font-size:0.7em">v16.1</small></h2>
+        <h2>🏥 VetManager <small style="font-size:0.7em">v18.0</small></h2>
         <button class="btn-reset" onclick="resetAll()">Limpar</button>
     </div>
 
     <div class="nav-tabs">
         <div class="nav-item active" onclick="switchTab('cadastro')">Prescrição</div>
-        <div class="nav-item" onclick="switchTab('config')">Configuração</div>
+        <div class="nav-item" onclick="switchTab('config')">Médico & Assinatura</div>
     </div>
 
     <div id="tab-cadastro" class="tab-content active">
+        <div id="sigStatusOk" class="sig-status-box">✅ Assinatura Digital Carregada</div>
+        <div id="sigStatusFail" class="sig-status-box missing">⚠️ Assinatura não configurada (Vá em 'Médico')</div>
+
         <div class="section-label">1. Paciente</div>
         <input type="text" id="tutor" placeholder="Nome do Tutor">
         <div class="row">
@@ -129,7 +130,7 @@
             </select>
             <input type="number" id="peso" placeholder="Peso (kg)" class="col" step="0.1" oninput="checkWeight()">
         </div>
-        <div id="weightAlert" class="alert">⚠️ <strong>Peso > 20kg:</strong> Preferência por via Oral.</div>
+        <div id="weightAlert" class="weight-alert">⚠️ <strong>Peso > 20kg:</strong> Preferência por via Oral.</div>
 
         <div class="section-label">2. Diagnóstico</div>
         <div class="symptoms-list" id="listaSintomas"></div>
@@ -138,16 +139,6 @@
         <div class="manual-box">
             <input type="text" id="manualPat" placeholder="Diagnóstico">
             <textarea id="manualMed" rows="2" style="margin-top:5px" placeholder="Tratamento"></textarea>
-        </div>
-
-        <div id="canvasArea" style="display:none; margin-top:20px;">
-            <div class="section-label">4. Assinatura</div>
-            <div class="signature-wrapper">
-                <span class="sig-text">Assine com o dedo...</span>
-                <canvas id="sigCanvas"></canvas>
-            </div>
-            <button class="btn-mini" style="float:right; margin-top:5px;" onclick="limparCanvas()">Limpar Assinatura</button>
-            <div style="clear:both"></div>
         </div>
 
         <button class="btn btn-calc" onclick="calcular()">🚀 Calcular</button>
@@ -160,55 +151,72 @@
     </div>
 
     <div id="tab-config" class="tab-content">
-        <div class="section-label">Dados do Veterinário</div>
+        <div class="section-label">Dados Profissionais</div>
         <input type="text" id="vetNome" placeholder="Nome Completo (Dr. ...)">
         <input type="text" id="vetCRMV" placeholder="CRMV / UF" style="margin-top:10px">
         <input type="email" id="vetEmail" placeholder="E-mail" style="margin-top:10px">
         <input type="text" id="vetContato" placeholder="Telefone / WhatsApp" style="margin-top:10px">
 
-        <div class="section-label">Carimbo Digital</div>
-        <div class="stamp-area">
-            <p style="font-size:0.8rem; color:#666; margin:0 0 10px 0;">PNG Transparente (600x300px)</p>
-            <input type="file" id="stampInput" accept="image/*" onchange="salvarCarimbo()">
-            <img id="stampPreview" style="max-height:80px; margin-top:10px; display:none;">
-            <br>
-            <button class="btn-mini" style="margin-top:10px;" onclick="removerCarimbo()">Remover</button>
+        <div class="section-label" style="margin-top:30px">Gerenciar Assinatura</div>
+        <div class="sig-manager">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="btn-tab-sig active" onclick="toggleSigMode('draw')" id="btnDraw">✍️ Desenhar</button>
+                <button class="btn-tab-sig" onclick="toggleSigMode('upload')" id="btnUpload">📁 Upload</button>
+            </div>
+
+            <div id="modeDraw">
+                <div class="canvas-wrapper">
+                    <canvas id="sigCanvas"></canvas>
+                </div>
+                <div style="margin-top:10px; display:flex; justify-content:space-between;">
+                    <button class="btn-mini" onclick="limparCanvas()" style="background:#e74c3c;">Limpar</button>
+                    <button class="btn-mini" onclick="salvarCanvas()" style="background:#27ae60; padding:8px 15px;">💾 Salvar Desenho</button>
+                </div>
+            </div>
+
+            <div id="modeUpload" style="display:none; text-align:center;">
+                <p style="font-size:0.8rem; color:#666;">Use PNG Transparente (Fundo Branco)<br>Ideal: 600x300px</p>
+                <input type="file" id="stampInput" accept="image/*" onchange="handleImageUpload()">
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid #eee; pt:10px; text-align:center;">
+                <p style="font-size:0.8rem; font-weight:bold;">Assinatura Atual Salva:</p>
+                <img id="sigPreview" style="max-height:60px; border:1px solid #eee; display:none; margin:0 auto;">
+                <button class="btn-mini" onclick="removerAssinatura()" style="margin-top:5px; background:#666;">🗑️ Apagar Assinatura</button>
+            </div>
         </div>
-        <button class="btn" style="background:var(--dark); color:white;" onclick="salvarTexto()">💾 Salvar</button>
+
+        <button class="btn btn-save" onclick="salvarDadosTexto()">💾 Salvar Dados de Texto</button>
     </div>
 </div>
 
 <div id="print-area">
     <div class="p-header">
         <h1 class="p-title">RECEITUÁRIO VETERINÁRIO</h1>
-        <div class="p-meta">
-            <div id="pDataHora"></div>
-        </div>
+        <div class="p-meta"><div id="pDataHora"></div></div>
     </div>
-
     <div class="p-box">
-        <strong>Tutor:</strong> <span id="pTutor"></span> | 
-        <strong>Paciente:</strong> <span id="pAnimal"></span> (<span id="pEspecie"></span> / <span id="pSexo"></span>)<br>
+        <strong>Tutor:</strong> <span id="pTutor"></span> | <strong>Paciente:</strong> <span id="pAnimal"></span> (<span id="pEspecie"></span> / <span id="pSexo"></span>)<br>
         <strong>Peso:</strong> <span id="pPeso"></span> kg
     </div>
-
     <div class="p-list-title">Prescrição Terapêutica</div>
     <div id="pLista"></div>
-
+    
     <div class="p-sig-block">
         <img id="pStampImg" class="p-sig-img">
-        <div id="pLine" class="p-sig-line" style="display:none;"></div>
+        <div class="p-sig-line"></div>
         <div class="p-vet-name" id="pVetName"></div>
         <div class="p-vet-crmv" id="pVetCRMV"></div>
     </div>
 
     <div class="p-footer-bar">
-        <span id="pFooterInfo"></span>
+        <div class="p-footer-contact" id="pFooterInfo"></div>
+        <div class="p-footer-legal" id="pFooterLegal"></div>
     </div>
 </div>
 
 <script>
-    /* BANCO DE DADOS */
+    /* BANCO DE DADOS (CORRIGIDO: 'cat' = Categoria, 'fel' = Dose Gato) */
     const database = [
         { cat: "ANTIMICROBIANOS", id: 1, p: "Infecção Pele", brand: "Rilexine / Keflex", salt: "Cefalexina", d: 30, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "14-21 dias" },
         { cat: "ANTIMICROBIANOS", id: 2, p: "Infecção Urinária", brand: "Synulox", salt: "Amox.+Clavulanato", d: 12.5, c: 50, u: "ml", a: "Susp. 250mg/5ml", f: "12/12h", t: "10-14 dias" },
@@ -216,7 +224,7 @@
         { cat: "ANTIMICROBIANOS", id: 4, p: "Giardíase", brand: "Giardicid", salt: "Metronidazol+Sulf.", d: 15, c: 50, u: "ml", a: "Susp. 50mg/ml", f: "12/12h", t: "5-7 dias" },
         { cat: "ANTIMICROBIANOS", id: 6, p: "Estomatite", brand: "Stomorgyl 10", salt: "Espiramicina+Metro.", d: 20, c: 1, u: "comp", a: "1 comp p/ 10kg", f: "24/24h", t: "10 dias" },
 
-        { cat: "DOR E INFLAMAÇÃO", id: 7, p: "Dor Articular", brand: "Maxicam", salt: "Meloxicam", dog: 0.1, cat: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3-4 dias" },
+        { cat: "DOR E INFLAMAÇÃO", id: 7, p: "Dor Articular", brand: "Maxicam", salt: "Meloxicam", dog: 0.1, fel: 0.05, c: 0.5, u: "ml", a: "Sol. 0,5mg/ml", f: "24/24h", t: "3-4 dias" },
         { cat: "DOR E INFLAMAÇÃO", id: 8, p: "Dor Forte", brand: "Tramadol", salt: "Tramadol", d: 3, c: 50, u: "comp", a: "Comp 50mg", f: "8/8h", t: "3-5 dias" },
         { cat: "DOR E INFLAMAÇÃO", id: 9, p: "Febre / Dor", brand: "Dipirona", salt: "Dipirona Sódica", d: 25, c: 500, u: "ml", a: "Gotas 500mg/ml", f: "6/6h", t: "Se dor" },
         { cat: "DOR E INFLAMAÇÃO", id: 10, p: "Alergia / Coceira", brand: "Prediderm", salt: "Prednisolona", d: 0.5, c: 5, u: "comp", a: "Comp 5mg", f: "24/24h", t: "5-7 dias" },
@@ -230,16 +238,15 @@
         { cat: "OUTROS", id: 22, p: "Limpeza Ouvido", brand: "Clean Up", salt: "Ceruminolítico", d: 1, c: 1, u: "ml", a: "Solução", f: "24/24h", t: "Antes med." }
     ];
 
-    /* APP LOGIC */
+    /* APP CORE */
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
-    let cacheRx = [];
     let drawing = false;
 
     window.onload = () => {
         carregarConfig();
         gerarLista();
-        checarCarimbo();
+        checkSigStatus();
         setupCanvas();
     };
 
@@ -283,6 +290,56 @@
         return txt;
     }
 
+    /* GESTÃO DE ASSINATURA */
+    function toggleSigMode(mode) {
+        document.getElementById('btnDraw').classList.toggle('active', mode === 'draw');
+        document.getElementById('btnUpload').classList.toggle('active', mode === 'upload');
+        document.getElementById('modeDraw').style.display = mode === 'draw' ? 'block' : 'none';
+        document.getElementById('modeUpload').style.display = mode === 'upload' ? 'block' : 'none';
+        if(mode === 'draw') setTimeout(resizeCanvas, 100);
+    }
+
+    function checkSigStatus() {
+        const sig = localStorage.getItem('vetSignature');
+        if(sig) {
+            document.getElementById('sigStatusOk').style.display = 'block';
+            document.getElementById('sigStatusFail').style.display = 'none';
+            document.getElementById('sigPreview').src = sig;
+            document.getElementById('sigPreview').style.display = 'block';
+        } else {
+            document.getElementById('sigStatusOk').style.display = 'none';
+            document.getElementById('sigStatusFail').style.display = 'block';
+            document.getElementById('sigPreview').style.display = 'none';
+        }
+    }
+
+    function salvarCanvas() {
+        const dataUrl = canvas.toDataURL();
+        localStorage.setItem('vetSignature', dataUrl);
+        alert("Assinatura Desenhada Salva!");
+        checkSigStatus();
+    }
+
+    function handleImageUpload() {
+        const file = document.getElementById('stampInput').files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem('vetSignature', e.target.result);
+            alert("Assinatura por Upload Salva!");
+            checkSigStatus();
+        }
+        reader.readAsDataURL(file);
+    }
+
+    function removerAssinatura() {
+        localStorage.removeItem('vetSignature');
+        checkSigStatus();
+        limparCanvas();
+    }
+
+    /* CALCULO E PRINT */
+    let cacheRx = [];
     function calcular() {
         const peso = parseFloat(document.getElementById('peso').value);
         const esp = document.getElementById('especie').value;
@@ -300,14 +357,12 @@
         checks.forEach(chk => {
             const m = database.find(p => p.id == chk.value);
             let doseFinal = m.a; 
-            
             if(!m.brand.includes("Simparic") && !m.brand.includes("Drontal") && !m.brand.includes("Probiótico") && !m.brand.includes("Stomorgyl")) {
                 let doseBase = m.d;
-                if(m.brand.includes('Maxicam')) doseBase = (esp === 'canino') ? m.dog : m.cat;
+                if(m.brand.includes('Maxicam')) doseBase = (esp === 'canino') ? m.dog : m.fel;
                 const qtd = (peso * doseBase) / m.c;
                 doseFinal = formatDose(qtd, m.u, m.brand);
             }
-            
             let via = (esp === 'canino' && peso > 20) ? "VIA ORAL (Preferencial)" : "via oral";
             cacheRx.push({ brand: m.brand, salt: m.salt, a: m.a, dose: doseFinal, freq: m.f, dur: m.t, via: via });
             prev.innerHTML += `<div class="preview-item"><strong>${m.brand}</strong>: ${doseFinal} (${m.f})</div>`;
@@ -341,37 +396,24 @@
             if(m.a === "Personalizado") {
                 pl.innerHTML += `<div class="p-item"><div class="p-med-header">${i+1}. ${m.salt} (Manual)</div><div class="p-med-body" style="white-space: pre-wrap;">${m.dose}</div></div>`;
             } else {
-                pl.innerHTML += `
-                <div class="p-item">
-                    <div class="p-med-header">${i+1}. ${m.brand} <small style="font-weight:normal">(${m.a})</small></div>
-                    <div class="p-med-sub">Princípio: ${m.salt}</div>
-                    <div class="p-med-body">
-                        <strong>Administrar:</strong> ${m.dose} ${m.via}.<br>
-                        <strong>Posologia:</strong> ${m.freq} durante ${m.dur}.
-                    </div>
-                </div>`;
+                pl.innerHTML += `<div class="p-item"><div class="p-med-header">${i+1}. ${m.brand} <small style="font-weight:normal">(${m.a})</small></div><div class="p-med-sub">Princípio: ${m.salt}</div><div class="p-med-body"><strong>Administrar:</strong> ${m.dose} ${m.via}.<br><strong>Posologia:</strong> ${m.freq} durante ${m.dur}.</div></div>`;
             }
         });
 
-        const vNome = localStorage.getItem('vetNome');
-        const vCRMV = localStorage.getItem('vetCRMV');
-        document.getElementById('pVetName').innerText = vNome;
-        document.getElementById('pVetCRMV').innerText = vCRMV;
-        
-        const stamp = localStorage.getItem('vetStampImg');
-        const img = document.getElementById('pStampImg');
-        const line = document.getElementById('pLine');
-        if(stamp) { img.src = stamp; img.style.display='block'; line.style.display='none'; }
-        else { img.src = canvas.toDataURL(); img.style.display='block'; line.style.display='block'; }
+        // RODAPÉ
+        document.getElementById('pVetName').innerText = localStorage.getItem('vetNome');
+        document.getElementById('pVetCRMV').innerText = localStorage.getItem('vetCRMV');
+        const sig = localStorage.getItem('vetSignature');
+        document.getElementById('pStampImg').src = sig ? sig : '';
+        document.getElementById('pStampImg').style.display = sig ? 'block' : 'none';
 
-        const vEmail = localStorage.getItem('vetEmail') || "";
-        const vTel = localStorage.getItem('vetContato') || "";
-        document.getElementById('pFooterInfo').innerText = `${vNome} | ${vCRMV} | ${vEmail} | ${vTel}`;
+        document.getElementById('pFooterInfo').innerText = `${localStorage.getItem('vetNome')} | ${localStorage.getItem('vetCRMV')} | ${localStorage.getItem('vetEmail')||''} | ${localStorage.getItem('vetContato')||''}`;
+        document.getElementById('pFooterLegal').innerText = `Documento assinado digitalmente em ${now.toLocaleString('pt-BR')}. A veracidade deste documento pode ser verificada junto ao emissor.`;
 
         window.print();
     }
 
-    /* CONFIG & CANVAS FIX */
+    /* CONFIG & CANVAS */
     function checkWeight() {
         const p = parseFloat(document.getElementById('peso').value);
         const e = document.getElementById('especie').value;
@@ -384,15 +426,15 @@
         document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); 
         document.getElementById('tab-'+t).classList.add('active'); 
         document.querySelectorAll('.nav-item')[t==='cadastro'?0:1].classList.add('active'); 
-        if(t==='cadastro'){ checarCarimbo(); setTimeout(resizeCanvas, 200); } 
+        if(t==='config') { setTimeout(resizeCanvas, 200); }
     }
     
-    function salvarTexto(){ 
+    function salvarDadosTexto(){ 
         localStorage.setItem('vetNome',document.getElementById('vetNome').value); 
         localStorage.setItem('vetCRMV',document.getElementById('vetCRMV').value); 
         localStorage.setItem('vetEmail',document.getElementById('vetEmail').value); 
         localStorage.setItem('vetContato',document.getElementById('vetContato').value); 
-        alert("Salvo!"); 
+        alert("Dados Salvos!"); 
     }
     function carregarConfig(){ 
         document.getElementById('vetNome').value=localStorage.getItem('vetNome')||""; 
@@ -400,24 +442,12 @@
         document.getElementById('vetEmail').value=localStorage.getItem('vetEmail')||""; 
         document.getElementById('vetContato').value=localStorage.getItem('vetContato')||""; 
     }
-    function salvarCarimbo(){ const f=document.getElementById('stampInput').files[0]; if(!f)return; const r=new FileReader(); r.onloadend=()=>{localStorage.setItem('vetStampImg',r.result); checarCarimbo(); alert("Ok!");}; r.readAsDataURL(f); }
-    function removerCarimbo(){ localStorage.removeItem('vetStampImg'); checarCarimbo(); setTimeout(resizeCanvas, 200); }
     
-    function checarCarimbo(){ 
-        if(localStorage.getItem('vetStampImg')){ 
-            document.getElementById('canvasArea').style.display='none'; 
-            document.getElementById('stampStatus').style.display='block'; 
-        } else { 
-            document.getElementById('canvasArea').style.display='block'; 
-            document.getElementById('stampStatus').style.display='none'; 
-        } 
-    }
-    
-    /* CANVAS LOGIC CORRIGIDA */
+    // Canvas Engine
     function setupCanvas(){
-        ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e, startDraw));
-        ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e, endDraw));
-        ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e, draw));
+        ['mousedown','touchstart'].forEach(e=>canvas.addEventListener(e, startDraw, {passive: false}));
+        ['mouseup','touchend'].forEach(e=>canvas.addEventListener(e, endDraw, {passive: false}));
+        ['mousemove','touchmove'].forEach(e=>canvas.addEventListener(e, draw, {passive: false}));
     }
     function resizeCanvas(){
         const p=canvas.parentElement;
@@ -428,15 +458,8 @@
             ctx.strokeStyle="#000080";
         }
     }
-    function startDraw(e){ 
-        drawing=true; 
-        ctx.beginPath(); 
-        draw(e); 
-    }
-    function endDraw(){ 
-        drawing=false; 
-        ctx.beginPath(); 
-    }
+    function startDraw(e){ drawing=true; ctx.beginPath(); draw(e); }
+    function endDraw(){ drawing=false; ctx.beginPath(); }
     function draw(e){ 
         if(!drawing) return; 
         e.preventDefault(); 
@@ -446,9 +469,7 @@
         ctx.lineTo(clientX - rect.left, clientY - rect.top);
         ctx.stroke(); 
     }
-    function limparCanvas(){ 
-        ctx.clearRect(0,0,canvas.width,canvas.height); 
-    }
+    function limparCanvas(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
 </script>
 </body>
 </html>
